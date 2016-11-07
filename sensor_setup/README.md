@@ -1,0 +1,1 @@
+#smartbed_sensor_setup
