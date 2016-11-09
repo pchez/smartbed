@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <mraa/i2c.h>
 #include "LSM9DS0.h"
-#define PI 3.14
-#include<math.h>
+
 typedef struct {
 	data_t accel_data, gyro_data, mag_data;
 	data_t gyro_offset;
@@ -18,7 +17,7 @@ typedef struct {
 } NINEDOF;
 
 NINEDOF *ninedof_init(accel_scale_t a, gyro_scale_t g, mag_scale_t m);
-void ninedof_read(NINEDOF *ninedof,float pitch[],float roll[]);
+void ninedof_read(NINEDOF *ninedof);
 void ninedof_print(NINEDOF* ninedof);
 
 #endif // 9DOF_H

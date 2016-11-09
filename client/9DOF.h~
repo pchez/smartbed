@@ -5,7 +5,7 @@
 #include <mraa/i2c.h>
 #include "LSM9DS0.h"
 #define PI 3.14
-#include<math.h>
+
 typedef struct {
 	data_t accel_data, gyro_data, mag_data;
 	data_t gyro_offset;

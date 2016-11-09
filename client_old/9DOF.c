@@ -17,8 +17,8 @@ NINEDOF *ninedof_init(accel_scale_t a, gyro_scale_t g, mag_scale_t m)
 
 	//set scale
 	set_accel_scale(ninedof->accel, ninedof->a_scale);
-	set_gyro_scale(ninedof->gyro, ninedof->g_scale);
-	set_mag_scale(ninedof->mag, ninedof->m_scale);
+	set_accel_scale(ninedof->gyro, ninedof->g_scale);
+	set_accel_scale(ninedof->mag, ninedof->m_scale);
 
 	//set sample rate setup
 	set_accel_ODR(ninedof->accel, A_ODR_800);
@@ -35,31 +35,18 @@ NINEDOF *ninedof_init(accel_scale_t a, gyro_scale_t g, mag_scale_t m)
 	return ninedof;
 }
 
-void ninedof_read(NINEDOF *ninedof,float pitch[],float roll[]) 
-{	
-	int i;
-	float angle_1,angle_2;
-for(i=1;i<151;i++)
-	{
+void ninedof_read(NINEDOF *ninedof) 
+{
 	// read accel, gyro, mag, and temperature
 	ninedof->accel_data = read_accel(ninedof->accel, ninedof->a_res);
 	ninedof->gyro_data = read_gyro(ninedof->gyro, ninedof->g_res);
 	ninedof->mag_data = read_mag(ninedof->mag, ninedof->m_res);
 	ninedof->temperature = read_temp(ninedof->accel);
-	angle_1= -2*atan2(ninedof->accel_data.x,sqrt(pow(ninedof->accel_data.x,2)+pow(ninedof->accel_data.y,2)+pow(ninedof->accel_data.z,2)))*(180/PI);
-		angle_2=2*atan2(ninedof->accel_data.y,sqrt(pow(ninedof->accel_data.x,2)+pow(ninedof->accel_data.y,2)+pow(ninedof->accel_data.z,2)))*(180/PI);
-		//temperature = read_temp(accel); 
-		//you can put mag as the parameter too.
-		pitch[i]=angle_1;
-		roll[i]=angle_2;
-	}
-	return ;
 }
 
 void ninedof_print(NINEDOF* ninedof)
 {
 	// print 9DOF accel, gyro, mag, and temperature
-	#if defined(PRINT_SENSOR_DATA)
 	printf("X Accel: %f\t Y Accel: %f\t Z Accel: %f\t||", ninedof->accel_data.x, 
 		ninedof->accel_data.y, ninedof->accel_data.z);
   	printf("\tX Gyro: %f\t Y Gyro: %f\t Z Gyro: %f\t||", 
@@ -69,7 +56,6 @@ void ninedof_print(NINEDOF* ninedof)
 	printf("\tX Mag: %f\t Y Mag: %f\t Z Mag: %f\t||", 
 		ninedof->mag_data.x, ninedof->mag_data.y, ninedof->mag_data.z);
 	printf("\tTemperature: %ld\n", ninedof->temperature);
-	#endif
 }
 
 

@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-c -g
+CFLAGS=-c
 LDFLAGS=-lmraa -pthread -lm
 SOURCES=main.c client.c 9DOF.c LSM9DS0.c 
 OBJECTS=$(SOURCES:.c=.o)

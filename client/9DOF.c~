@@ -39,7 +39,7 @@ void ninedof_read(NINEDOF *ninedof,float pitch[],float roll[])
 {	
 	int i;
 	float angle_1,angle_2;
-for(i=1;i<151;i++)
+for(i=0;i<150;i++)
 	{
 	// read accel, gyro, mag, and temperature
 	ninedof->accel_data = read_accel(ninedof->accel, ninedof->a_res);
