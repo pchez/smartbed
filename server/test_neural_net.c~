@@ -138,28 +138,37 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		// clear the buffer
 		//memset(buffer, 0, 256);
 		memset(tmp,0,sizeof(tmp));
-		sprintf(tmp,"send data now");
+		sprintf(tmp,"a");
+		//sprintf(tmp,"send data now");
 		n = write(client_socket_fd, tmp, strlen(tmp));
 		if(n<0) {
 		    server_error("ERROR writing to socket");
 		}
 		// read what the client sent to the server and store it in "buffer"
+		printf("Pre Read from client\n");
 		n = read(client_socket_fd, buffer, NUMDATAPTS*4); //51 floats at 4 bytes a piece	
+		printf("Post Read from client\n");
 		if(n<0) {
+		    //printf("HERE!\n");
 		    server_error("ERROR reading from socket");
-		    return NULL;
+		    //return NULL;
 		}
+
 		int i;
 		//int bufferSize = sizeof(buffer)/4;
 		//printf("buffer size: %d\n", bufferSize);
+		/*
 		for(i=0;i<NUMDATAPTS;i++) {
 		    printf("%f\n", buffer[i]);
 		}
+		*/
 		
 		if(buffer[0] == 0) {
 		    //FILE *fp;
 		    //fp = fopen("train_data.txt", "wb");
+		    printf("First Packet: Pitch Data\n");
 		    for(i=1; i < NUMDATAPTS; i++) {
+			printf("%f\n", buffer[i]);
 			Angle_Buffer_client.pitchBuffer[i-1] = buffer[i];
 		    }
 		    memset(tmp, 0, sizeof(tmp));
@@ -179,7 +188,9 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 			return NULL;
 		    }
 		    //fp = fopen("roll_data.txt", "wb");
+		    printf("Roll Buffer Data\n");
 		    for(i=1;i<NUMDATAPTS;i++) {
+			printf("%f\n", buffer[i]);
 			Angle_Buffer_client.rollBuffer[i-1] = buffer[i];
 		    }
 
@@ -209,7 +220,9 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	       	       return NULL;
 	       	   }
 		   //FILE *fp = fopen("pitch_data.txt", "wb");
+		   printf("Pitch Buffer Data: \n");
 		   for(i=1;i<NUMDATAPTS;i++) {
+		       printf("%f\n", buffer[i]);
 		       Angle_Buffer_client.pitchBuffer[i-1] = buffer[i];
 		   }
 
@@ -225,10 +238,11 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 			printf("%s has terminated the connection.\n", client->ip_addr_str);
 			return NULL;
 		}
-
-		for(int i=0;i<NUMDATAPTS-1;i++) {
+		/*
+		for(i=0;i<NUMDATAPTS-1;i++) {
 		    printf("%f\n", Angle_Buffer_client.pitchBuffer[i]);
 		}
+		*/
 
 		/*if (n==0) {
 		    printf("Waiting for client data\n");
