@@ -46,29 +46,29 @@ void* read_data(void *arg)
 	printf("data\n");
 	while(run_flag)
 	{
-	pitch=calloc(151,sizeof(float));
-	roll=calloc(151,sizeof(float));
-	pitch[0]=0;
-	roll[0]=1;
-	ninedof_read(ninedof,(pitch),(roll));
-	int i=0;
-	pthread_mutex_lock(&m);
-	while(sent==0)
+	    pitch=calloc(151,sizeof(float));
+	    roll=calloc(151,sizeof(float));
+	    pitch[0]=0;
+	    roll[0]=1;
+	    ninedof_read(ninedof,(pitch),(roll));
+	    int i=0;
+	    pthread_mutex_lock(&m);
+	    while(sent==0)
 		pthread_cond_wait(&w, &m);
-	for  (i = 0; i < 151; i++)
-	{
+	    for  (i = 0; i < 151; i++)
+	    {
 		pitch_buffer[i]=pitch[i];
 		roll_buffer[i]=roll[i];
-	}
-	printf("done \n");
-	sent=0;
-	done =1;
-	pthread_cond_signal(&c);
-	printf("signlaed \n");
-	pthread_mutex_unlock(&m);
-	printf("done2\n");
-	free(pitch);
-	free(roll);
+	    }
+	    printf("done \n");
+	    sent=0;
+	    done =1;
+	    pthread_cond_signal(&c);
+	    printf("signlaed \n");
+	    pthread_mutex_unlock(&m);
+	    printf("done2\n");
+	    free(pitch);
+	    free(roll);
 	}
 }
 
@@ -83,7 +83,7 @@ void* client_handle_connection(void *arg)
 	//memset(buffer, 0, 256);
 	int i;
 	printf("msg from server:\n ");
-
+	
 	int client;
 	client=*(int *)arg;
 	
@@ -101,8 +101,9 @@ void* client_handle_connection(void *arg)
 
 		rc=pthread_mutex_lock(&m);
 		if(rc==EBUSY)
-		{printf("lock bsy\n");
-		continue;	
+		{
+		    printf("lock bsy\n");
+		    continue;	
 		}
 		printf("inside\n");
 		while(done ==0)
@@ -111,10 +112,21 @@ void* client_handle_connection(void *arg)
 		
 		printf("raed is %d\n", done);
 		for(i=0;i<151;i++)
-		printf("%f",pitch_buffer[i]);	
+		    printf("%f\n",pitch_buffer[i]);	
 		//n=read(client,buffer,256);
+		n=read(client,buffer,sizeof(buffer));
+		if(!strcmp(buffer,"c")) {
+		    printf("I am here!\n");
+		}
+		printf("Pre Write to server\n");
 		n = write(client,pitch_buffer, 604);
-	/*	if (n < 0){
+		printf("Post write to server\n");
+		if(n<0) {
+		    client_error("ERROR writing to socket");
+		}
+		//n = read(client_socket_fd, buffer, strlen(buffer));
+		//n = write(client_socket_fd, pitch_buffer, 604);
+		/*	if (n < 0){
 			printf("zero");
 			return 0;
 		}
@@ -140,7 +152,7 @@ void* client_handle_connection(void *arg)
 		usleep(10000);
 	}
 	close(client);
-	return 1;
+	//return 1;
 }
 
 int main(int argc, char *argv[])
