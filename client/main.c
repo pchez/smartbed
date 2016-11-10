@@ -115,12 +115,7 @@ void* client_handle_connection(void *arg)
 		    printf("%f\n",pitch_buffer[i]);	
 		//n=read(client,buffer,256);
 		n=read(client,buffer,sizeof(buffer));
-		if(!strcmp(buffer,"a")) {
-		    printf("I am here!\n");
-		}
-		printf("Pre Write to server\n");
 		n = write(client,pitch_buffer, 604);
-		printf("Post write to server\n");
 		if(n<0) {
 		    client_error("ERROR writing to socket");
 		}
