@@ -20,9 +20,14 @@ int shared_array_index = 0;
 pthread_mutex_t lock;
 
 struct Angle_Buffer{
-float pitchBuffer[150];
-float rollBuffer[150];
+    float pitchBuffer[150];
+    float rollBuffer[150];
 };
+
+typedef struct {
+    CONNECTION *client[4];
+} clientThreads;
+//clientThreads->client[i]
 
 struct Angle_Buffer Angle_Buffer_client;
 struct Angle_Buffer Angle_Buffer_server;
