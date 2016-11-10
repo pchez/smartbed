@@ -138,8 +138,8 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		// clear the buffer
 		//memset(buffer, 0, 256);
 		memset(tmp,0,sizeof(tmp));
-		sprintf(tmp,"a");
-		//sprintf(tmp,"send data now");
+		//sprintf(tmp,"a");
+		sprintf(tmp,"send data now");
 		n = write(client_socket_fd, tmp, strlen(tmp));
 		if(n<0) {
 		    server_error("ERROR writing to socket");
