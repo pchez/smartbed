@@ -123,7 +123,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
         //float pitchBuffer[256], rollBuffer[256];
 	CONNECTION *client;
 	int n, client_socket_fd;
-	char tmp[256]; //char buffer[256]
+	char cmd[256]; //char buffer[256]
 	float *buffer;
 	buffer = calloc(NUMDATAPTS,sizeof(float));
 	
@@ -140,17 +140,17 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	
 	
 	while (run_flag) {
-		// clear the buffer
-		//memset(buffer, 0, 256);
-		memset(tmp,0,sizeof(tmp));
-		//sprintf(tmp,"a");
-		sprintf(tmp,"send data now");
-		n = write(client_socket_fd, tmp, strlen(tmp));
-		if(n<0) {
+		memset(buffer, 0, 256);
+		memset(cmd, 0, sizeof(cmd));
+		sprintf(cmd, "p");					//have server send pitch data
+		n = write(client_socket_fd, cmd, strlen(cmd));		//write 'p' to socket to request pitch data
+		printf("We sent the client: %s\n", cmd);
+		if (n < 0) {
 		    server_error("ERROR writing to socket");
 		}
+		
 		// read what the client sent to the server and store it in "buffer"
-		printf("Pre Read from client\n");
+		printf("Reading pitch from client\n");
 		n = read(client_socket_fd, buffer, NUMDATAPTS*4); //51 floats at 4 bytes a piece	
 		printf("Post Read from client\n");
 		if(n<0) {
@@ -158,6 +158,8 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		    server_error("ERROR reading from socket");
 		    //return NULL;
 		}
+		 memset(cmd, 0, sizeof(cmd));
+
 		//if n==0, ignore. dont worry about for now
 		//increase data sample??
 
@@ -174,13 +176,14 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		    //FILE *fp;
 		    //fp = fopen("train_data.txt", "wb");
 		    printf("First Packet: Pitch Data\n");
+		    printf("raw buffer: %s\n", buffer); 
 		    for(i=1; i < NUMDATAPTS; i++) {
-			printf("%f\n", buffer[i]);
+			printf("%f ", buffer[i]);
 			Angle_Buffer_client.pitchBuffer[i-1] = buffer[i];
 		    }
-		    memset(tmp, 0, sizeof(tmp));
-		    sprintf(tmp,"received pitch data");
-		    n = write(client_socket_fd, tmp, strlen(tmp));
+		    printf('\n');
+		    sprintf(cmd,"r");
+		    n = write(client_socket_fd, cmd, strlen(cmd));
 		    if(n<0) {
 			server_error("ERROR writing to socket");
 			//return NULL;
@@ -197,9 +200,10 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		    //fp = fopen("roll_data.txt", "wb");
 		    printf("Roll Buffer Data\n");
 		    for(i=1;i<NUMDATAPTS;i++) {
-			printf("%f\n", buffer[i]);
+			printf("%f n", buffer[i]);
 			Angle_Buffer_client.rollBuffer[i-1] = buffer[i];
 		    }
+		    printf('\n');
 
 		}
 		else if (buffer[0] == 1) {
@@ -208,9 +212,9 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		   for(i=1; i < NUMDATAPTS; i++) {
 		       Angle_Buffer_client.rollBuffer[i-1] = buffer[i];
 		   }
-		   memset(tmp, 0, sizeof(tmp));
-		   sprintf(tmp,"received roll data");
-		   n = write(client_socket_fd, tmp, strlen(tmp));
+		   memset(cmd, 0, sizeof(cmd));
+		   sprintf(cmd,"received roll data");
+		   n = write(client_socket_fd, cmd, strlen(cmd));
 		   if(n<0) {
 		       server_error("ERROR writing to socket");
 		       //return NULL;
@@ -263,9 +267,9 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		
 		//no need to send data back to client at this point
 /*
-		memset(tmp, 0, sizeof(tmp));
-		sprintf(tmp, "%s sent the server: %s", client->ip_addr_str, buffer);
-		n = write(client_socket_fd, tmp, strlen(tmp));
+		memset(cmd, 0, sizeof(cmd));
+		sprintf(cmd, "%s sent the server: %s", client->ip_addr_str, buffer);
+		n = write(client_socket_fd, cmd, strlen(cmd));
 		if (n < 0) {
 			server_error("ERROR writing to socket");
 			return NULL;
@@ -359,7 +363,7 @@ void* manage_server(void *arg)
 	/*
 	//CONNECTION *client;
 	int n, client_socket_fd;
-	char tmp[256]; //char buffer[256]
+	char cmd[256]; //char buffer[256]
 	float *buffer;
 	buffer = calloc(NUMDATAPTS,sizeof(float));
 	
@@ -398,9 +402,9 @@ void* manage_server(void *arg)
 		    for(i=1; i < NUMDATAPTS; i++) {
 			client->pitchBuffer[i-1] = buffer[i];
 		    }
-		    memset(tmp, 0, sizeof(tmp));
-		    sprintf(tmp,"received pitch data");
-		    n = write(client_socket_fd, tmp, strlen(tmp));
+		    memset(cmd, 0, sizeof(cmd));
+		    sprintf(cmd,"received pitch data");
+		    n = write(client_socket_fd, cmd, strlen(cmd));
 		    if(n<0) {
 			server_error("ERROR writing to socket");
 			return NULL;
@@ -426,9 +430,9 @@ void* manage_server(void *arg)
 		   for(i=1; i < NUMDATAPTS; i++) {
 		       client->rollBuffer[i-1] = buffer[i];
 		   }
-		   memset(tmp, 0, sizeof(tmp));
-		   sprintf(tmp,"received roll data");
-		   n = write(client_socket_fd, tmp, strlen(tmp));
+		   memset(cmd, 0, sizeof(cmd));
+		   sprintf(cmd,"received roll data");
+		   n = write(client_socket_fd, cmd, strlen(cmd));
 		   if(n<0) {
 		       server_error("ERROR writing to socket");
 		       return NULL;
@@ -509,15 +513,15 @@ int main(int argc, char **argv)
 	clients *clientThreads = calloc(4,sizeof(CONNECTION*));	
 	
 	clientThreads->client[0] = (CONNECTION*) server_accept_connection(server->sockfd);
-	clientThreads->client[1] = (CONNECTION*) server_accept_connection(server->sockfd);
-	clientThreads->client[2] = (CONNECTION*) server_accept_connection(server->sockfd);
-	clientThreads->client[3] = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThreads->client[1] = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThreads->client[2] = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThreads->client[3] = (CONNECTION*) server_accept_connection(server->sockfd);
 	
 	while(1) {
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThreads->client[0]);
-	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
-	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThreads->client[2]);
-	    pthread_create(&tids[3], NULL, handle_client, (void*)clientThreads->client[3]);
+	    //pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
+	    //pthread_create(&tids[2], NULL, handle_client, (void*)clientThreads->client[2]);
+	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThreads->client[3]);
 	    
 	    rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
 	    if (rc != 0) {
@@ -527,9 +531,9 @@ int main(int argc, char **argv)
 	    
 	    pthread_join(manage_9dof_tid, NULL);
 	    pthread_join(tids[0], NULL);
-	    pthread_join(tids[1], NULL);
-	    pthread_join(tids[2], NULL);
-	    pthread_join(tids[3], NULL);
+	    //pthread_join(tids[1], NULL);
+	    //pthread_join(tids[2], NULL);
+	    //pthread_join(tids[3], NULL);
     
 	    float server_pitch_avg, server_roll_avg, client_pitch_avg, client_roll_avg;
 	    float server_pitch_sum = 0, server_roll_sum = 0, client_pitch_sum = 0, client_roll_sum = 0;
