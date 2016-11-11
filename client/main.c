@@ -104,27 +104,38 @@ void* client_handle_connection(void *arg)
 		while(done==0)
 			pthread_cond_wait(&c, &m);
 		
+		printf("Pitch Data: \n");
 		for(i=0; i<151; i++)
-		    printf("%f ", pitch_buffer[i]);	
+		    printf("%f\n", pitch_buffer[i]);	
 		
 		n = read(client, buffer, sizeof(buffer));
-		printf("read from server: %s\n", buffer);
-		if (n > 0 && strcmp(buffer, "p")==0)
+		buffer[strlen(buffer)] = '\0';
+		printf("read from server(pitch): %s\n", buffer);
+		if (n > 0 && strcmp(buffer, "pitch")==0)
 		{
 		    	printf("writing pitch buffer to server\n");
 			n = write(client, pitch_buffer, 604);
 			if (n < 0) {
 		    		client_error("ERROR writing to socket");
 			}
+			printf("sent pitch buffer\n");
 		}
+		printf("----------------------------------------------------\n");
+		printf("Roll data: \n");
+		for(i=0;i<151;i++)
+		    printf("%f\n", roll_buffer[i]);
+
 		n = read(client, buffer, sizeof(buffer));
-		if (n > 0 && strcmp(buffer, "r" )==0)
+		buffer[strlen(buffer)-1] = '\0';
+		printf("read from server(roll): %s\n", buffer);
+		if (n > 0 && strcmp(buffer, "roll" )==0)
 		{
 		    	printf("writing roll buffer to server\n");
 			n = write(client, roll_buffer, 604);
 			if (n < 0) {
 				client_error("ERROR writing to socket");
 			}
+			printf("sent roll buffer\n");
 		}
 		
 		printf("number of bytes sent %d\n", n);
