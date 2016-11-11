@@ -27,6 +27,7 @@ struct Angle_Buffer{
 typedef struct {
     CONNECTION *client[4];
 } clients;
+int clientCount = 0;
 //clientThreads->client[i]
 
 struct Angle_Buffer Angle_Buffer_client;
@@ -122,13 +123,17 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 {
         //float pitchBuffer[256], rollBuffer[256];
 	CONNECTION *client;
-	int n, client_socket_fd;
+	//clients *clientVal = calloc(1,sizeof(CONNECTION*));
+    	int n, client_socket_fd;
 	char cmd[256]; //char buffer[256]
 	float *buffer;
 	buffer = calloc(NUMDATAPTS,sizeof(float));
-	
+
+		
 	client = (CONNECTION *)arg;
 	client_socket_fd = client->sockfd;
+	//client_socket_fd = clientVal->client[clientCount]->sockfd;
+	
 	//memset(buffer, 0, 256);
 	
 	
@@ -140,11 +145,14 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	
 	
 	while (run_flag) {
-		memset(buffer, 0, 256);
+		int i;
+	    	memset(buffer, 0, 256);
 		memset(cmd, 0, sizeof(cmd));
-		sprintf(cmd, "p");					//have server send pitch data
+		sprintf(cmd, "pitch");					//have server send pitch data
+		cmd[strlen(cmd)] = '\0';
 		n = write(client_socket_fd, cmd, strlen(cmd));		//write 'p' to socket to request pitch data
-		printf("We sent the client: %s", cmd);
+		
+		printf("We sent the client: %s\n", cmd);
 		if (n < 0) {
 		    server_error("ERROR writing to socket");
 		}
@@ -158,12 +166,49 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		    server_error("ERROR reading from socket");
 		    //return NULL;
 		}
-		 memset(cmd, 0, sizeof(cmd));
+
+		if(buffer[0] == 0) {
+		   if(buffer[1] == 0) { 
+		       //read again
+		       n = read(client_socket_fd, buffer, NUMDATAPTS*4);
+		   }
+		   printf("Received Pitch Data: \n");
+		   for(i=0;i<NUMDATAPTS;i++) {
+		       printf("%f\n", buffer[i]);
+		       Angle_Buffer_client.pitchBuffer[i-1] = buffer[i];
+		   }
+		}
+
+		sprintf(cmd,"roll");
+		cmd[strlen(cmd)] = '\0';
+		n=write(client_socket_fd, cmd, strlen(cmd));
+		printf("Sent client %s\n", cmd);
+		if(n<0) {
+		    server_error("ERROR writing to socket");
+		}
+
+		printf("----------------------------------------------\n");
+		if(buffer[0] == 1) {
+		    if(buffer[1] == 0) {
+			n = read(client_socket_fd, buffer, NUMDATAPTS*4);
+		    }
+		    printf("REceived Roll Data: \n");
+		    for(i=0;i<NUMDATAPTS;i++) {
+			printf("%f\n", buffer[i]);
+			Angle_Buffer_client.rollBuffer[i-1] = buffer[i];
+		    }
+		}
+		printf("END PITCH ROLL LOOP\n");
+		
+
+
+
+		//memset(cmd, 0, sizeof(cmd));
 
 		//if n==0, ignore. dont worry about for now
 		//increase data sample??
+		
 
-		int i;
 		//int bufferSize = sizeof(buffer)/4;
 		//printf("buffer size: %d\n", bufferSize);
 		/*
@@ -171,16 +216,17 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		    printf("%f\n", buffer[i]);
 		}
 		*/
-		
+		/*
 		if(buffer[0] == 0) {
 		    //FILE *fp;
 		    //fp = fopen("train_data.txt", "wb");
 		    printf("First Packet: Pitch Data\n");
+		    //printf("raw buffer: %s\n", buffer); 
 		    for(i=1; i < NUMDATAPTS; i++) {
-			printf("%f ", buffer[i]);
+			printf("%f\n", buffer[i]);
 			Angle_Buffer_client.pitchBuffer[i-1] = buffer[i];
 		    }
-		    printf('\n');
+		    printf("\n");
 		    sprintf(cmd,"r");
 		    n = write(client_socket_fd, cmd, strlen(cmd));
 		    if(n<0) {
@@ -191,18 +237,20 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		    if(n<0) {
 			server_error("ERROR reading from socket");
 			//return NULL;
-		    }/*
+		    }
+		   */
+		   /*
 		    if(buffer[0] != 1) {
 			printf("Error, incorrect packet ID\n");
 			return NULL;
 		    }*/
 		    //fp = fopen("roll_data.txt", "wb");
-		    printf("Roll Buffer Data\n");
+/*		    printf("Roll Buffer Data\n");
 		    for(i=1;i<NUMDATAPTS;i++) {
-			printf("%f n", buffer[i]);
+			printf("%f\n", buffer[i]);
 			Angle_Buffer_client.rollBuffer[i-1] = buffer[i];
 		    }
-		    printf('\n');
+		    printf("\n");
 
 		}
 		else if (buffer[0] == 1) {
@@ -224,14 +272,14 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 			server_error("ERROR reading from socket");
 			//return NULL;
 		   }
-			/*
+*/			/*
 		   if(buffer[0] != 0) {
 		       printf("Error, incorrect packet ID\n");
 	       	       //return NULL;
 	       	   }
 		   */
 		   //FILE *fp = fopen("pitch_data.txt", "wb");
-		   printf("Pitch Buffer Data: \n");
+/*		   printf("Pitch Buffer Data: \n");
 		   for(i=1;i<NUMDATAPTS;i++) {
 		       printf("%f\n", buffer[i]);
 		       Angle_Buffer_client.pitchBuffer[i-1] = buffer[i];
@@ -243,11 +291,12 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	    		printf("ERROR, incorrect  packet IDi. Neither packet had a 1 or 0 as first array element\n");
 	    		return NULL;
 		}		
-
+*/
 		// no data was sent, assume the connection was terminated
 		if (n == 0) { 
 			printf("%s has terminated the connection.\n", client->ip_addr_str);
-			return NULL;
+			//printf("%s has terminated the connection.\n",clientVal->client[clientCount]->ip_addr_str);
+		    	return NULL;
 		}
 		/*
 		for(i=0;i<NUMDATAPTS-1;i++) {
@@ -521,7 +570,8 @@ int main(int argc, char **argv)
 	    //pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
 	    //pthread_create(&tids[2], NULL, handle_client, (void*)clientThreads->client[2]);
 	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThreads->client[3]);
-	    
+	    //
+	    clientCount = 0; //reset client count    
 	    rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
 	    if (rc != 0) {
 		fprintf(stderr, "Failed to create manage_9dof thread. Exiting Program.\n");
@@ -533,7 +583,8 @@ int main(int argc, char **argv)
 	    //pthread_join(tids[1], NULL);
 	    //pthread_join(tids[2], NULL);
 	    //pthread_join(tids[3], NULL);
-    
+   	
+	 
 	    float server_pitch_avg, server_roll_avg, client_pitch_avg, client_roll_avg;
 	    float server_pitch_sum = 0, server_roll_sum = 0, client_pitch_sum = 0, client_roll_sum = 0;
 	    int i = 0;
@@ -549,7 +600,8 @@ int main(int argc, char **argv)
 	    server_roll_avg = (server_roll_sum/150+90)/180;
 	    client_pitch_avg = (client_pitch_sum/150+90)/180;
 	    client_roll_avg = (client_roll_sum/150+90)/180;
-	    
+	  
+	     
 	    //test the neural network
 	    ann = fann_create_from_file("TEST.net");
 	    
@@ -568,7 +620,9 @@ int main(int argc, char **argv)
 		    }
 	    }
 	    printf("Patient is at location %d\n", patient_location); 
+	
 	}
+
 	/*	
 	while(i < max_connections && run_flag) {
 	    	//need four of line below in main
