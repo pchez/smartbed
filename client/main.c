@@ -43,7 +43,7 @@ void* read_data(void *arg)
 	mraa_init();
 	ninedof = ninedof_init(A_SCALE_4G, G_SCALE_245DPS, M_SCALE_2GS);
 	float *pitch, *roll;
-	printf("data\n");
+	printf("collecting data in 9DOF thread\n");
 	while(run_flag)
 	{
 	    pitch=calloc(151,sizeof(float));
@@ -60,13 +60,13 @@ void* read_data(void *arg)
 		pitch_buffer[i]=pitch[i];
 		roll_buffer[i]=roll[i];
 	    }
-	    printf("done \n");
+	    printf("done collecting in 9DOF thread\n");
 	    sent=0;
 	    done =1;
 	    pthread_cond_signal(&c);
-	    printf("signlaed \n");
+	    printf("pthread signal\n");
 	    pthread_mutex_unlock(&m);
-	    printf("done2\n");
+	    printf("done with this iteration in 9DOF thread\n");
 	    free(pitch);
 	    free(roll);
 	}
@@ -77,19 +77,17 @@ void* client_handle_connection(void *arg)
 	int n;
 	int rc;
 	//float *pitch, *roll;
-	char buffer[256]="strings";
+	char buffer[256]="u";
 	double sec_since_epoch;
 
 	//memset(buffer, 0, 256);
 	int i;
-	printf("msg from server:\n ");
-	
 	int client;
 	client = *(int *)arg;
 	
 	while (run_flag) 
 	{
-		//memset(buffer, 0, 256);
+		memset(buffer, 0, 256);
 		
 		// timestamp right before read 9DOF data
 		sec_since_epoch = timestamp();
@@ -100,18 +98,20 @@ void* client_handle_connection(void *arg)
 		rc=pthread_mutex_lock(&m);
 		if(rc==EBUSY)
 		{
-		    printf("lock bsy\n");
+		    printf("lock busy\n");
 		    continue;	
 		}
 		while(done==0)
 			pthread_cond_wait(&c, &m);
 		
 		for(i=0; i<151; i++)
-		    printf("%f\n", pitch_buffer[i]);	
+		    printf("%f ", pitch_buffer[i]);	
 		
 		n = read(client, buffer, sizeof(buffer));
+		printf("read from server: %s\n", buffer);
 		if (n > 0 && strcmp(buffer, "p")==0)
 		{
+		    	printf("writing pitch buffer to server\n");
 			n = write(client, pitch_buffer, 604);
 			if (n < 0) {
 		    		client_error("ERROR writing to socket");
@@ -120,13 +120,14 @@ void* client_handle_connection(void *arg)
 		n = read(client, buffer, sizeof(buffer));
 		if (n > 0 && strcmp(buffer, "r" )==0)
 		{
-			n = write(client, pitch_buffer, 604);
+		    	printf("writing roll buffer to server\n");
+			n = write(client, roll_buffer, 604);
 			if (n < 0) {
 				client_error("ERROR writing to socket");
 			}
 		}
 		
-		printf("numbe of bytesi s%d\n",n);
+		printf("number of bytes sent %d\n", n);
 
 		//memset(buffer, 0, 256);
         	//n=read(client,buffer,604);
