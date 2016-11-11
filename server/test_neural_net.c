@@ -26,7 +26,7 @@ struct Angle_Buffer{
 
 typedef struct {
     CONNECTION *client[4];
-} clientThreads;
+} clients;
 //clientThreads->client[i]
 
 struct Angle_Buffer Angle_Buffer_client;
@@ -481,7 +481,7 @@ void* manage_server(void *arg)
 
 int main(int argc, char **argv)
 {
-	pthread_t manage_9dof_tid, manage_server_tid;
+	pthread_t manage_9dof_tid; //, manage_server_tid;
 	int rc;
 	fann_type *output;
 	fann_type input[4];
@@ -496,25 +496,112 @@ int main(int argc, char **argv)
 		printf("mutex init failed\n");
 		return 1;
 	}
+
+	CONNECTION *server;
+	pthread_t tids[256];
+
+	//server thread
+	server = (CONNECTION *) server_init(PORTNO, 10);
+	if ((int) server == -1){
+		run_flag = 0;
+	}
+
+	clients *clientThreads = calloc(4,sizeof(CONNECTION*));	
 	
+	clientThreads->client[0] = (CONNECTION*) server_accept_connection(server->sockfd);
+	clientThreads->client[1] = (CONNECTION*) server_accept_connection(server->sockfd);
+	clientThreads->client[2] = (CONNECTION*) server_accept_connection(server->sockfd);
+	clientThreads->client[3] = (CONNECTION*) server_accept_connection(server->sockfd);
+	
+	while(1) {
+	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThreads->client[0]);
+	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
+	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThreads->client[2]);
+	    pthread_create(&tids[3], NULL, handle_client, (void*)clientThreads->client[3]);
+	    
+	    rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
+	    if (rc != 0) {
+		fprintf(stderr, "Failed to create manage_9dof thread. Exiting Program.\n");
+		exit(0);
+	    }
+	    
+	    pthread_join(manage_9dof_tid, NULL);
+	    pthread_join(tids[0], NULL);
+	    pthread_join(tids[1], NULL);
+	    pthread_join(tids[2], NULL);
+	    pthread_join(tids[3], NULL);
+    
+	    float server_pitch_avg, server_roll_avg, client_pitch_avg, client_roll_avg;
+	    float server_pitch_sum = 0, server_roll_sum = 0, client_pitch_sum = 0, client_roll_sum = 0;
+	    int i = 0;
+	    
+	    for(; i < 150; i++) {
+		server_pitch_sum += Angle_Buffer_server.pitchBuffer[i];
+		server_roll_sum += Angle_Buffer_server.rollBuffer[i];
+		client_pitch_sum += Angle_Buffer_client.pitchBuffer[i];
+		client_roll_sum += Angle_Buffer_client.rollBuffer[i];
+	    }		
+	    
+	    server_pitch_avg = (server_pitch_sum/150+90)/180;
+	    server_roll_avg = (server_roll_sum/150+90)/180;
+	    client_pitch_avg = (client_pitch_sum/150+90)/180;
+	    client_roll_avg = (client_roll_sum/150+90)/180;
+	    
+	    //test the neural network
+	    ann = fann_create_from_file("TEST.net");
+	    
+	    input[0] = server_pitch_avg;
+	    input[1] = server_roll_avg;
+	    input[2] = client_pitch_avg;
+	    input[3] = client_roll_avg;
+	    
+	    output = fann_run(ann, input);
+	    max = output[0];
+	    patient_location = 0;
+	    for (k=1; k<4; k++) {
+		    if (output[k] > max) {
+			    max = output[k];
+			    patient_location = k;
+		    }
+	    }
+	    printf("Patient is at location %d\n", patient_location); 
+	}
+	/*	
+	while(i < max_connections && run_flag) {
+	    	//need four of line below in main
+		//run while 1
+		client = (CONNECTION*) server_accept_connection(server->sockfd);
+		if ((int) client == -1) {
+			printf("Latest child process is waiting for an incoming client connection.\n");
+		}
+		else {
+			i++;
+			pthread_create(&tids[i], NULL, handle_client, (void *)client);
+		}
+	}
+	*/
+
+
 	//create threads
-	rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
+/*	rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
 	if (rc != 0) {
 		fprintf(stderr, "Failed to create manage_9dof thread. Exiting Program.\n");
 		exit(0);
 	}
+
 	//dpnt need stuff below
 	rc = pthread_create(&manage_server_tid, NULL, manage_server, NULL);
 	if (rc != 0) {
 		fprintf(stderr, "Failed to create thread. Exiting program.\n");
 		exit(0);
 	}
-
-	pthread_join(manage_9dof_tid, NULL);
-	pthread_join(manage_server_tid, NULL);
+*/
+	//pthread_join(manage_9dof_tid, NULL);
+	//pthread_join(manage_server_tid, NULL);
 	
+	/*	
 	float server_pitch_avg, server_roll_avg, client_pitch_avg, client_roll_avg;
-    float server_pitch_sum = 0, server_roll_sum = 0, client_pitch_sum = 0, client_roll_sum = 0;
+        float server_pitch_sum = 0, server_roll_sum = 0, client_pitch_sum = 0, client_roll_sum = 0;
 	
 	int i = 0;
 
@@ -561,7 +648,7 @@ int main(int argc, char **argv)
 	//fprintf(fp,"%f\t%f\t%f\t%f\n", server_pitch_avg, server_roll_avg, client_pitch_avg, client_roll_avg);
 	//fprintf(fp,"%d\t%d\t%d\t%d\n", 0,0,0,1);
 	//fclose(fp);
-
+*/
 	printf("\n...cleanup operations complete. Exiting main.\n");
 
 	return 0;
