@@ -5,7 +5,7 @@
 #include <signal.h>
 #include <pthread.h>
 #include <unistd.h>
-
+#include <sys/ioctl.h>
 #include "floatfann.h"
 #include "server.h"
 #include "9DOF.h"
@@ -124,7 +124,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
         //float pitchBuffer[256], rollBuffer[256];
 	CONNECTION *client;
 	//clients *clientVal = calloc(1,sizeof(CONNECTION*));
-    	int n, client_socket_fd;
+    int n, client_socket_fd;
 	char cmd[256]; //char buffer[256]
 	float *buffer;
 	buffer = calloc(NUMDATAPTS,sizeof(float));
@@ -133,6 +133,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	client = (CONNECTION *)arg;
 	client_socket_fd = client->sockfd;
 	//client_socket_fd = clientVal->client[clientCount]->sockfd;
+	ioctl(client_socket_fd, FIONBIO, 0);  
 	
 	//memset(buffer, 0, 256);
 	
@@ -146,22 +147,32 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	
 	while (run_flag) {
 		int i;
-	    	memset(buffer, 0, 256);
+	    memset(buffer, 0, 256);
 		memset(cmd, 0, sizeof(cmd));
-		sprintf(cmd, "pitch");					//have server send pitch data
-		cmd[strlen(cmd)] = '\0';
-		n = write(client_socket_fd, cmd, strlen(cmd));		//write 'p' to socket to request pitch data
-		
-		printf("We sent the client: %s\n", cmd);
+		sprintf(cmd, "pitch");							
+		n = read(client_socket_fd, buffer, 10);						//read from socket to see if client ready
 		if (n < 0) {
-		    server_error("ERROR writing to socket");
+			server_error("ERROR reading from socket");
+			printf("client not ready\n");
 		}
+		else {
+			printf("client sent us: %s\n", buffer);
+			if (strcmp("ready", buffer)==0) {						//if we read that the client is ready
+				cmd[strlen(cmd)] = '\0';							
+				n = write(client_socket_fd, cmd, strlen(cmd));		//write 'pitch' to socket to request pitch data
+				if (n < 0) {
+		    		server_error("ERROR writing to socket");
+				}
+				printf("client is ready, sent pitch command\n");
+			}
+		}
+		
 		
 		// read what the client sent to the server and store it in "buffer"
 		printf("Reading pitch from client\n");
-		n = read(client_socket_fd, buffer, NUMDATAPTS*4); //51 floats at 4 bytes a piece	
+		n = read(client_socket_fd, buffer, NUMDATAPTS*4); 				//51 floats at 4 bytes a piece	
 		printf("Post Read from client\n");
-		if(n<0) {
+		if(n < 0) {
 		    //printf("HERE!\n");
 		    server_error("ERROR reading from socket");
 		    //return NULL;

@@ -162,7 +162,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		n = read(client_socket_fd, buffer, NUMDATAPTS*4); //51 floats at 4 bytes a piece	
 		printf("Post Read from client\n");
 		if(n<0) {
-		    //printf("HERE!\n");
+		    printf("HERE!\n");
 		    server_error("ERROR reading from socket");
 		    //return NULL;
 		}
