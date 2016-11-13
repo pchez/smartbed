@@ -124,11 +124,11 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
         //float pitchBuffer[256], rollBuffer[256];
 	CONNECTION *client;
 	//clients *clientVal = calloc(1,sizeof(CONNECTION*));
-    int n, client_socket_fd;
+    	int n, client_socket_fd;
 	char cmd[256]; //char buffer[256]
 	float *buffer;
 	buffer = calloc(NUMDATAPTS,sizeof(float));
-
+	char ready_buf[10];
 		
 	client = (CONNECTION *)arg;
 	client_socket_fd = client->sockfd;
@@ -147,30 +147,76 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	
 	while (run_flag) {
 		int i;
-	    memset(buffer, 0, 256);
+	    	memset(buffer, 0, 256);
 		memset(cmd, 0, sizeof(cmd));
 		sprintf(cmd, "pitch");							
-		n = read(client_socket_fd, buffer, 10);						//read from socket to see if client ready
+		//n = read(client_socket_fd, buffer, 10);		//read from socket to see if client ready
+		n = read(client_socket_fd, ready_buf, 10);
 		if (n < 0) {
 			server_error("ERROR reading from socket");
 			printf("client not ready\n");
 		}
 		else {
-			printf("client sent us: %s\n", buffer);
-			if (strcmp("ready", buffer)==0) {						//if we read that the client is ready
+			//printf("client sent us: %s\n", buffer);
+			if (strcmp(ready_buf, "ready")==0) {	//if we read that the client is ready
 				cmd[strlen(cmd)] = '\0';							
-				n = write(client_socket_fd, cmd, strlen(cmd));		//write 'pitch' to socket to request pitch data
+				n = write(client_socket_fd, cmd, strlen(cmd));//write 'pitch' to socket to request pitch data
 				if (n < 0) {
-		    		server_error("ERROR writing to socket");
+				    server_error("ERROR writing to socket");
 				}
 				printf("client is ready, sent pitch command\n");
+
+				printf("Reading pitch data from client\n");
+				n = read(client_socket_fd, buffer, NUMDATAPTS*4);
+				printf("Post read from client\n");
+
+				if(n < 0) {
+				    //printf("HERE!\n");
+				    server_error("ERROR reading from socket");
+				    //return NULL;
+				}
+
+				if(buffer[0] == 0) {
+				   if(buffer[1] == 0) { 
+				       //read again
+				       n = read(client_socket_fd, buffer, NUMDATAPTS*4);
+				   }
+				   printf("Received Pitch Data: \n");
+				   for(i=0;i<NUMDATAPTS;i++) {
+				       printf("%f\n", buffer[i]);
+				       Angle_Buffer_client.pitchBuffer[i-1] = buffer[i];
+				   }
+				}
+
+				sprintf(cmd,"roll");
+				cmd[strlen(cmd)] = '\0';
+				n=write(client_socket_fd, cmd, strlen(cmd));
+				printf("Sent client %s\n", cmd);
+				if(n<0) {
+				    server_error("ERROR writing to socket");
+				}
+
+				printf("----------------------------------------------\n");
+				n = read(client_socket_fd, buffer, NUMDATAPTS*4);
+				printf("Just read roll\n");
+				if(buffer[0] == 1) {
+				    if(buffer[1] == 0) {
+					n = read(client_socket_fd, buffer, NUMDATAPTS*4);
+				    }
+				    printf("REceived Roll Data: \n");
+				    for(i=0;i<NUMDATAPTS;i++) {
+					printf("%f\n", buffer[i]);
+					Angle_Buffer_client.rollBuffer[i-1] = buffer[i];
+				    }
+				}
+				printf("END PITCH ROLL LOOP\n");
 			}
 		}
 		
-		
+		/*
 		// read what the client sent to the server and store it in "buffer"
 		printf("Reading pitch from client\n");
-		n = read(client_socket_fd, buffer, NUMDATAPTS*4); 				//51 floats at 4 bytes a piece	
+		n = read(client_socket_fd, buffer, NUMDATAPTS*4); 	//51 floats at 4 bytes a piece	
 		printf("Post Read from client\n");
 		if(n < 0) {
 		    //printf("HERE!\n");
@@ -210,7 +256,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		    }
 		}
 		printf("END PITCH ROLL LOOP\n");
-		
+		*/
 
 
 
