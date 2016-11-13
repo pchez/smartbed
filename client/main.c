@@ -90,7 +90,7 @@ void* client_handle_connection(void *arg)
 	ioctl(client, FIONBIO, 0); 
 	
 	sprintf(ready_buf, "ready");
-	
+	ready_buf[strlen(ready_buf)] = '\0';
 	while (run_flag) 
 	{
 		memset(buffer, 0, 256);
