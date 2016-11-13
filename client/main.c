@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <errno.h>
+#include <sys/ioctl.h>
 
 #define CSV_LINE_SIZE 18 //4 for now, change to 50 for actual implementation
 typedef unsigned long long llu;
@@ -77,13 +78,18 @@ void* client_handle_connection(void *arg)
 	int n;
 	int rc;
 	//float *pitch, *roll;
-	char buffer[256]="u";
-	double sec_since_epoch;
+	char buffer[256];
+	char ready_buf[10];
+	double sec_since_epoch; 
 
 	//memset(buffer, 0, 256);
 	int i;
 	int client;
+	int server_signal;
 	client = *(int *)arg;
+	ioctl(client, FIONBIO, 0); 
+	
+	sprintf(ready_buf, "ready");
 	
 	while (run_flag) 
 	{
@@ -101,19 +107,22 @@ void* client_handle_connection(void *arg)
 		    printf("lock busy\n");
 		    continue;	
 		}
-		while(done==0)
+		while (done==0)
 			pthread_cond_wait(&c, &m);
+
+		n = write(client, ready_buf, sizeof(ready_buf));	//tell server we are ready to send
 		
-		printf("Pitch Data: \n");
+		printf("Pitch Data: \n");						//print pitch data we are sending to the server
 		for(i=0; i<151; i++)
 		    printf("%f\n", pitch_buffer[i]);	
 		
-		n = read(client, buffer, sizeof(buffer));
+		n = read(client, buffer, sizeof(buffer));		//read server ack/command to begin sending data
+		
 		buffer[strlen(buffer)] = '\0';
 		printf("read from server(pitch): %s\n", buffer);
 		if (n > 0 && strcmp(buffer, "pitch")==0)
 		{
-		    	printf("writing pitch buffer to server\n");
+		    printf("writing pitch buffer to server\n");
 			n = write(client, pitch_buffer, 604);
 			if (n < 0) {
 		    		client_error("ERROR writing to socket");
@@ -148,7 +157,7 @@ void* client_handle_connection(void *arg)
 			sent=1;
 		}*/
 		done=0;
-		sent=1;	
+		sent = 1;
 		pthread_cond_signal(&w);
 		pthread_mutex_unlock(&m);
 		

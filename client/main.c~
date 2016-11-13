@@ -136,6 +136,7 @@ void* client_handle_connection(void *arg)
 				client_error("ERROR writing to socket");
 			}
 			printf("sent roll buffer\n");
+			sent = 1;
 		}
 		
 		printf("number of bytes sent %d\n", n);
@@ -148,7 +149,6 @@ void* client_handle_connection(void *arg)
 			sent=1;
 		}*/
 		done=0;
-		sent=1;	
 		pthread_cond_signal(&w);
 		pthread_mutex_unlock(&m);
 		
@@ -156,7 +156,7 @@ void* client_handle_connection(void *arg)
 		// print the message from server
 		
 		//printf("%f\n", ninedof->accel_data.z);
-		//usleep(10000);
+		usleep(10000);
 	}
 	close(client);
 	//return 1;
