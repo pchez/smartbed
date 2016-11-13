@@ -177,10 +177,10 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 				}
 
 				if(buffer[0] == 0) {
-				   if(buffer[1] == 0) { 
+				   /*if(buffer[1] == 0) { 
 				       //read again
 				       n = read(client_socket_fd, buffer, NUMDATAPTS*4);
-				   }
+				   }*/
 				   printf("Received Pitch Data: \n");
 				   for(i=0;i<NUMDATAPTS;i++) {
 				       printf("%f\n", buffer[i]);
@@ -200,9 +200,9 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 				n = read(client_socket_fd, buffer, NUMDATAPTS*4);
 				printf("Just read roll\n");
 				if(buffer[0] == 1) {
-				    if(buffer[1] == 0) {
+				    /*if(buffer[1] == 0) {
 					n = read(client_socket_fd, buffer, NUMDATAPTS*4);
-				    }
+				    }*/
 				    printf("REceived Roll Data: \n");
 				    for(i=0;i<NUMDATAPTS;i++) {
 					printf("%f\n", buffer[i]);
