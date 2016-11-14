@@ -689,29 +689,49 @@ int main(int argc, char **argv)
 	
 	clients *clientThread_0 = calloc(1,sizeof(clients));
 	clients *clientThread_1 = calloc(1,sizeof(clients));
-	clients *clientThread_2 = calloc(1,sizeof(clients));
-	clients *clientThread_3 = calloc(1,sizeof(clients));
+	//clients *clientThread_2 = calloc(1,sizeof(clients));
+	//clients *clientThread_3 = calloc(1,sizeof(clients));
 
 	clientThread_0->index = 0;
 	clientThread_1->index = 1;
-	clientThread_2->index = 2;
-	clientThread_3->index = 3;
+	//clientThread_2->index = 2;
+	//clientThread_3->index = 3;
 
 	clientThread_0->client = (CONNECTION*) server_accept_connection(server->sockfd);
 	clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
 
 	//clientThreads->client[0] = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThreads->client[1] = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThreads->client[2] = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThreads->client[3] = (CONNECTION*) server_accept_connection(server->sockfd);
+
+            float server_pitch_avg = 0;
+	    float server_roll_avg = 0;
+	    float server_pitch_sum = 0; 
+	    float server_roll_sum = 0;
+	    float client0_pitch_avg = 0;
+	    float client0_roll_avg = 0;
+	    float client0_pitch_sum = 0;
+	    float client0_roll_sum = 0;
+	    float client1_pitch_avg = 0;
+	    float client1_roll_avg = 0;
+	    float client1_pitch_sum = 0;
+	    float client1_roll_sum = 0;
+	    float client2_pitch_avg = 0;
+	    float client2_roll_avg = 0; 
+	    float client2_pitch_sum = 0;
+	    float client2_roll_sum = 0;
 	
+
+
+		int i;
 	while(1) {
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThread_0);
 	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
-	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
-	    pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
+	    //pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
+	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
 	    /*
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThreads->client[0]);
 	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
@@ -730,38 +750,77 @@ int main(int argc, char **argv)
 	    pthread_join(tids[0], NULL);
 	    pthread_join(tids[1], NULL);
 	    pthread_join(tids[2], NULL);
-	    pthread_join(tids[3], NULL);
+	    //pthread_join(tids[3], NULL);
    	
 	 
-	    float server_pitch_avg, server_roll_avg, client_pitch_avg, client_roll_avg;
-	    float server_pitch_sum = 0, server_roll_sum = 0, client_pitch_sum = 0, client_roll_sum = 0;
-	    int i = 0;
+	     server_pitch_avg = 0;
+	     server_roll_avg = 0;
+	     server_pitch_sum = 0; 
+	     server_roll_sum = 0;
+	     client0_pitch_avg = 0;
+	     client0_roll_avg = 0;
+	     client0_pitch_sum = 0;
+	     client0_roll_sum = 0;
+	     client1_pitch_avg = 0;
+	     client1_roll_avg = 0;
+	     client1_pitch_sum = 0;
+	     client1_roll_sum = 0;
+	     client2_pitch_avg = 0;
+	     client2_roll_avg = 0; 
+	     client2_pitch_sum = 0;
+	     client2_roll_sum = 0;
+	    //float client3_pitch_avg, client3_roll_avg, client3_pitch_sum, client3_roll_sum;
+	    //float client4_pitch_avg, client4_roll_avg, client4_pitch_sum, client4_roll_sum;
+
+	    //float clients_pitch_avg[4], clients_roll_avg[4];	
+
 	    
-	    for(; i < 150; i++) {
-		server_pitch_sum += Angle_Buffer_server.pitchBuffer[i];
-		server_roll_sum += Angle_Buffer_server.rollBuffer[i];
-		client_pitch_sum += Angle_Buffer_client_0.pitchBuffer[i];
-		client_roll_sum += Angle_Buffer_client_0.rollBuffer[i];
-	    }		
+	   
+	    for(i=0; i < 150; i++) {
+		    server_pitch_sum += Angle_Buffer_server.pitchBuffer[i];
+		    server_roll_sum += Angle_Buffer_server.rollBuffer[i];
+		    client0_pitch_sum += Angle_Buffer_client_0.pitchBuffer[i];
+		    client0_roll_sum += Angle_Buffer_client_0.rollBuffer[i];
+		    client1_pitch_sum += Angle_Buffer_client_1.pitchBuffer[i];
+		    client1_roll_sum += Angle_Buffer_client_1.rollBuffer[i];
+		    client2_pitch_sum += Angle_Buffer_client_2.pitchBuffer[i];
+		    client2_roll_sum += Angle_Buffer_client_2.rollBuffer[i];
+		    //client3_pitch_sum += Angle_Buffer_client_3.pitchBuffer[i];
+		    //client3_roll_sum += Angle_Buffer_client_3.rollBuffer[i];
+	
+	    }
+	    		
 	    
 	    server_pitch_avg = (server_pitch_sum/150+90)/180;
 	    server_roll_avg = (server_roll_sum/150+90)/180;
-	    client_pitch_avg = (client_pitch_sum/150+90)/180;
-	    client_roll_avg = (client_roll_sum/150+90)/180;
-	  
-	     
+	    client0_pitch_avg = (client0_pitch_sum/150+90)/180;
+	    client0_pitch_avg = (client0_pitch_sum/150+90)/180;
+	    client1_pitch_avg = (client1_pitch_sum/150+90)/180;
+	    client1_roll_avg = (client1_roll_sum/150+90)/180;
+	    client2_pitch_avg = (client2_pitch_sum/150+90)/180;
+	    client2_roll_avg = (client2_roll_sum/150+90)/180;
+	    //client3_pitch_avg = (client3_pitch_sum/150+90)/180;
+	    //client3_roll_avg = (client3_roll_sum/150+90)/180;
+	    
 	    //test the neural network
 	    ann = fann_create_from_file("TEST.net");
 	    
 	    input[0] = server_pitch_avg;
 	    input[1] = server_roll_avg;
-	    input[2] = client_pitch_avg;
-	    input[3] = client_roll_avg;
+	    input[2] = client0_pitch_avg;
+	    input[3] = client0_roll_avg;
+	    input[4] = client1_pitch_avg;
+	    input[5] = client1_roll_avg;
+	    input[6] = client2_pitch_avg;
+	    input[7] = client2_roll_avg;
+	    //input[8] = client3_pitch_avg;
+	    //input[9] = client3_roll_avg;
 	    
+
 	    output = fann_run(ann, input);
 	    max = output[0];
 	    patient_location = 0;
-	    for (k=1; k<4; k++) {
+	    for (k=1; k<11; k++) {
 		    if (output[k] > max) {
 			    max = output[k];
 			    patient_location = k;

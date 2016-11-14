@@ -727,7 +727,7 @@ int main(int argc, char **argv)
 
 
 		int i;
-	while(1) {
+	//while(1) {
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThread_0);
 	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
 	    //pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
@@ -753,7 +753,7 @@ int main(int argc, char **argv)
 	    //pthread_join(tids[3], NULL);
    	
 	 
-	     server_pitch_avg = 0;
+	    server_pitch_avg = 0;
 	     server_roll_avg = 0;
 	     server_pitch_sum = 0; 
 	     server_roll_sum = 0;
@@ -773,8 +773,11 @@ int main(int argc, char **argv)
 	    //float client4_pitch_avg, client4_roll_avg, client4_pitch_sum, client4_roll_sum;
 
 	    //float clients_pitch_avg[4], clients_roll_avg[4];	
+		
+	     FILE *fp;
+	     fp = fopen("train_data.txt", "a");
+	     fprintf(fp, "1050\t8\t7\n");
 
-	    
 	   
 	    for(i=0; i < 150; i++) {
 		    server_pitch_sum += Angle_Buffer_server.pitchBuffer[i];
@@ -787,10 +790,17 @@ int main(int argc, char **argv)
 		    client2_roll_sum += Angle_Buffer_client_2.rollBuffer[i];
 		    //client3_pitch_sum += Angle_Buffer_client_3.pitchBuffer[i];
 		    //client3_roll_sum += Angle_Buffer_client_3.rollBuffer[i];
-	
+		//printf("%f\t%f\t%f\t%f\n", server_pitch_avg, server_roll_avg, client_pitch_avg, client_roll_avg);
+		fprintf(fp,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", server_pitch_avg, server_roll_avg, client0_pitch_avg, client0_roll_avg, client1_pitch_avg, client1_roll_avg, client2_pitch_avg, client2_roll_avg);
+		//int output = atoi(argv[1]);
+		fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 1,0,0,0,0,0,0);
+    		// HAVE TO AVERAGE FOR BETWEEN 0 and 1
+		// RE-CHECK IF OUTPUT IS AFTER EVERY DATA SET		
 	    }
+
+	    fclose(fp);
 	    		
-	    
+	    /*
 	    server_pitch_avg = (server_pitch_sum/150+90)/180;
 	    server_roll_avg = (server_roll_sum/150+90)/180;
 	    client0_pitch_avg = (client0_pitch_sum/150+90)/180;
@@ -799,12 +809,13 @@ int main(int argc, char **argv)
 	    client1_roll_avg = (client1_roll_sum/150+90)/180;
 	    client2_pitch_avg = (client2_pitch_sum/150+90)/180;
 	    client2_roll_avg = (client2_roll_sum/150+90)/180;
+	    */
 	    //client3_pitch_avg = (client3_pitch_sum/150+90)/180;
 	    //client3_roll_avg = (client3_roll_sum/150+90)/180;
 	    
 	    //test the neural network
-	    ann = fann_create_from_file("TEST.net");
-	    
+	   // ann = fann_create_from_file("TEST.net");
+	    /*
 	    input[0] = server_pitch_avg;
 	    input[1] = server_roll_avg;
 	    input[2] = client0_pitch_avg;
@@ -813,22 +824,23 @@ int main(int argc, char **argv)
 	    input[5] = client1_roll_avg;
 	    input[6] = client2_pitch_avg;
 	    input[7] = client2_roll_avg;
+	    */
 	    //input[8] = client3_pitch_avg;
 	    //input[9] = client3_roll_avg;
 	    
 
-	    output = fann_run(ann, input);
+	   /* output = fann_run(ann, input);
 	    max = output[0];
 	    patient_location = 0;
-	    for (k=1; k<7; k++) {
+	    for (k=1; k<11; k++) {
 		    if (output[k] > max) {
 			    max = output[k];
 			    patient_location = k;
 		    }
 	    }
 	    printf("Patient is at location %d\n", patient_location); 
-	
-	}
+	*/
+//	} // end of main while loop
 
 	/*	
 	while(i < max_connections && run_flag) {
@@ -903,16 +915,9 @@ int main(int argc, char **argv)
 	}
 	printf("Patient is at location %d\n", patient_location);
 	
-	
-	////////////training stuff////////////
-	//FILE *fp;
-	//fp = fopen("./train_data.txt", "a");
-	//fprintf(fp, "250\t3\t5\n");
-	//printf("%f\t%f\t%f\t%f\n", server_pitch_avg, server_roll_avg, client_pitch_avg, client_roll_avg);
-	//fprintf(fp,"%f\t%f\t%f\t%f\n", server_pitch_avg, server_roll_avg, client_pitch_avg, client_roll_avg);
-	//fprintf(fp,"%d\t%d\t%d\t%d\n", 0,0,0,1);
-	//fclose(fp);
-*/
+	*/
+	///
+
 	printf("\n...cleanup operations complete. Exiting main.\n");
 
 	return 0;
