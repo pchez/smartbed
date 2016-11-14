@@ -23,15 +23,29 @@ struct Angle_Buffer{
     float pitchBuffer[150];
     float rollBuffer[150];
 };
-
+/*
 typedef struct {
     CONNECTION *client[4];
+} clients;
+*/
+
+typedef struct {
+    CONNECTION *client;
+    int index;
 } clients;
 int clientCount = 0;
 //clientThreads->client[i]
 
-struct Angle_Buffer Angle_Buffer_client;
+struct Angle_Buffer Angle_Buffer_client_0;
 struct Angle_Buffer Angle_Buffer_server;
+struct Angle_Buffer Angle_Buffer_client_1;
+struct Angle_Buffer Angle_Buffer_client_2;
+struct Angle_Buffer Angle_Buffer_client_3;
+
+
+
+
+
 
 void do_when_interrupted()
 {
@@ -122,7 +136,8 @@ void* manage_9dof(void *arg)
 void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 {
         //float pitchBuffer[256], rollBuffer[256];
-	CONNECTION *client;
+	//CONNECTION *client;
+	clients *client_struct;
 	//clients *clientVal = calloc(1,sizeof(CONNECTION*));
     	int n, client_socket_fd;
 	char cmd[256]; //char buffer[256]
@@ -130,19 +145,20 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	buffer = calloc(NUMDATAPTS,sizeof(float));
 	char ready_buf[10];
 		
-	client = (CONNECTION *)arg;
-	client_socket_fd = client->sockfd;
+	//client = (CONNECTION *)arg;
+	client_struct = (clients*)arg;
+	client_socket_fd = client_struct->client->sockfd;
 	//client_socket_fd = clientVal->client[clientCount]->sockfd;
 	ioctl(client_socket_fd, FIONBIO, 0);  
 	
 	//memset(buffer, 0, 256);
 	
 	
-	int index;			//private variable - each thread will have its own copy. this is the array index of client_data's arrays in which this thread will store into 
-	pthread_mutex_lock(&lock);	//begin critical section
-	index = shared_array_index;	//assign this shared variable to the private index variable so now each thread keeps track of its own unique index	
-	shared_array_index += 1;	//increment the shared variable - first thread to access this variable gets index=0, second thread gets index=1, etc
-	pthread_mutex_unlock(&lock);	//end critical section
+	int index = client_struct->index;			//private variable - each thread will have its own copy. this is the array index of client_data's arrays in which this thread will store into 
+	//pthread_mutex_lock(&lock);	//begin critical section
+	//index = shared_array_index;	//assign this shared variable to the private index variable so now each thread keeps track of its own unique index	
+	//shared_array_index += 1;	//increment the shared variable - first thread to access this variable gets index=0, second thread gets index=1, etc
+	//pthread_mutex_unlock(&lock);	//end critical section
 	
 	
 	while (run_flag) {
@@ -181,11 +197,38 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 				       //read again
 				       n = read(client_socket_fd, buffer, NUMDATAPTS*4);
 				   }*/
-				   printf("Received Pitch Data: \n");
-				   for(i=0;i<NUMDATAPTS;i++) {
-				       printf("%f\n", buffer[i]);
-				       Angle_Buffer_client.pitchBuffer[i-1] = buffer[i];
-				   }
+				   switch(index) {
+				       case 0:
+				   	 printf("Received Pitch Data from Thread 0: \n");
+				  	 for(i=1;i<NUMDATAPTS;i++) {
+				      		 printf("%f\n", buffer[i]);
+				       		Angle_Buffer_client_0.pitchBuffer[i-1] = buffer[i];
+				  	 }
+					 break;
+				  	case 1: 
+					 printf("Received Pitch Data from Thread 1: \n");
+				  	 for(i=1;i<NUMDATAPTS;i++) {
+				      		 printf("%f\n", buffer[i]);
+				       		Angle_Buffer_client_1.pitchBuffer[i-1] = buffer[i];
+				  	 }
+					 break;
+					case 2:
+					 printf("Received Pitch Data from Thread 2: \n");
+				  	 for(i=1;i<NUMDATAPTS;i++) {
+				      		 printf("%f\n", buffer[i]);
+				       		Angle_Buffer_client_2.pitchBuffer[i-1] = buffer[i];
+				  	 }
+					 break;
+					case 3:
+					 printf("Received Pitch Data from Thread 3: \n");
+				  	 for(i=1;i<NUMDATAPTS;i++) {
+				      		 printf("%f\n", buffer[i]);
+				       		Angle_Buffer_client_3.pitchBuffer[i-1] = buffer[i];
+				  	 }
+					 break;
+					default:
+					 printf("I shouldn't be here! \n");
+				   } // end of case statement
 				}
 
 				sprintf(cmd,"roll");
@@ -203,11 +246,38 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 				    /*if(buffer[1] == 0) {
 					n = read(client_socket_fd, buffer, NUMDATAPTS*4);
 				    }*/
-				    printf("REceived Roll Data: \n");
-				    for(i=0;i<NUMDATAPTS;i++) {
-					printf("%f\n", buffer[i]);
-					Angle_Buffer_client.rollBuffer[i-1] = buffer[i];
-				    }
+				     switch(index) {
+				       case 0:
+				   	 printf("Received Roll Data from Thread 0: \n");
+				  	 for(i=1;i<NUMDATAPTS;i++) {
+				      		 printf("%f\n", buffer[i]);
+				       		Angle_Buffer_client_0.rollBuffer[i-1] = buffer[i];
+				  	 }
+					 break;
+				  	case 1: 
+					 printf("Received Roll Data from Thread 1: \n");
+				  	 for(i=1;i<NUMDATAPTS;i++) {
+				      		 printf("%f\n", buffer[i]);
+				       		Angle_Buffer_client_1.rollBuffer[i-1] = buffer[i];
+				  	 }
+					 break;
+					case 2:
+					 printf("Received Roll Data from Thread 2: \n");
+				  	 for(i=1;i<NUMDATAPTS;i++) {
+				      		 printf("%f\n", buffer[i]);
+				       		Angle_Buffer_client_2.rollBuffer[i-1] = buffer[i];
+				  	 }
+					 break;
+					case 3:
+					 printf("Received Roll Data from Thread 3: \n");
+				  	 for(i=1;i<NUMDATAPTS;i++) {
+				      		 printf("%f\n", buffer[i]);
+				       		Angle_Buffer_client_3.rollBuffer[i-1] = buffer[i];
+				  	 }
+					 break;
+					default:
+					 printf("I shouldn't be here! Again... \n");
+				   } // end of case statement
 				}
 				printf("END PITCH ROLL LOOP\n");
 			}
@@ -351,7 +421,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 */
 		// no data was sent, assume the connection was terminated
 		if (n == 0) { 
-			printf("%s has terminated the connection.\n", client->ip_addr_str);
+			printf("%s has terminated the connection.\n", client_struct->client->ip_addr_str);
 			//printf("%s has terminated the connection.\n",clientVal->client[clientCount]->ip_addr_str);
 		    	return NULL;
 		}
@@ -615,18 +685,39 @@ int main(int argc, char **argv)
 		run_flag = 0;
 	}
 
-	clients *clientThreads = calloc(4,sizeof(CONNECTION*));	
+	//clients *clientThreads = calloc(4,sizeof(CONNECTION*));	
 	
-	clientThreads->client[0] = (CONNECTION*) server_accept_connection(server->sockfd);
+	clients *clientThread_0 = calloc(1,sizeof(clients));
+	clients *clientThread_1 = calloc(1,sizeof(clients));
+	//clients *clientThread_2 = calloc(1,sizeof(clients));
+	//clients *clientThread_3 = calloc(1,sizeof(clients));
+
+	clientThread_0->index = 0;
+	clientThread_1->index = 1;
+	//clientThread_2->index = 2;
+	//clientThread_3->index = 3;
+
+	clientThread_0->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
+
+	//clientThreads->client[0] = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThreads->client[1] = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThreads->client[2] = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThreads->client[3] = (CONNECTION*) server_accept_connection(server->sockfd);
 	
 	while(1) {
+	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThread_0);
+	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
+	    //pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
+	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
+	    /*
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThreads->client[0]);
-	    //pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
-	    //pthread_create(&tids[2], NULL, handle_client, (void*)clientThreads->client[2]);
-	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThreads->client[3]);
+	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
+	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThreads->client[2]);
+	    pthread_create(&tids[3], NULL, handle_client, (void*)clientThreads->client[3]);
+	    */
 	    //
 	    clientCount = 0; //reset client count    
 	    rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
@@ -637,7 +728,7 @@ int main(int argc, char **argv)
 	    
 	    pthread_join(manage_9dof_tid, NULL);
 	    pthread_join(tids[0], NULL);
-	    //pthread_join(tids[1], NULL);
+	    pthread_join(tids[1], NULL);
 	    //pthread_join(tids[2], NULL);
 	    //pthread_join(tids[3], NULL);
    	
@@ -649,8 +740,8 @@ int main(int argc, char **argv)
 	    for(; i < 150; i++) {
 		server_pitch_sum += Angle_Buffer_server.pitchBuffer[i];
 		server_roll_sum += Angle_Buffer_server.rollBuffer[i];
-		client_pitch_sum += Angle_Buffer_client.pitchBuffer[i];
-		client_roll_sum += Angle_Buffer_client.rollBuffer[i];
+		client_pitch_sum += Angle_Buffer_client_0.pitchBuffer[i];
+		client_roll_sum += Angle_Buffer_client_0.rollBuffer[i];
 	    }		
 	    
 	    server_pitch_avg = (server_pitch_sum/150+90)/180;
