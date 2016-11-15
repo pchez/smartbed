@@ -142,7 +142,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	int index = client_struct->index;			//private variable - each thread will have its own copy. this is the array index of client_data's arrays in which this thread will store into 
 	
 	
-	 while(collectflag) {
+	 while(collect_flag) {
 		int i;
 	    	//memset(buffer, 0, 256);
 		memset(cmd, 0, sizeof(cmd));
