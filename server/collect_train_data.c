@@ -16,6 +16,7 @@
 #define NUMDATAPTS 151
 #define PI 3.14159265358979
 static volatile int run_flag = 1;
+static volatile int collect_flag;
 int shared_array_index = 0;
 pthread_mutex_t lock;
 
@@ -144,7 +145,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	float *buffer;
 	buffer = calloc(NUMDATAPTS,sizeof(float));
 	char ready_buf[10];
-		
+	collect_flag = 1;
 	//client = (CONNECTION *)arg;
 	client_struct = (clients*)arg;
 	client_socket_fd = client_struct->client->sockfd;
@@ -161,7 +162,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	//pthread_mutex_unlock(&lock);	//end critical section
 	
 	
-	while (run_flag) {
+	while (collect_flag) {
 		int i;
 	    	memset(buffer, 0, 256);
 		memset(cmd, 0, sizeof(cmd));
@@ -175,7 +176,8 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		else {
 			//printf("client sent us: %s\n", buffer);
 			if (strcmp(ready_buf, "ready")==0) {	//if we read that the client is ready
-				cmd[strlen(cmd)] = '\0';							
+				collect_flag = 0;
+			        cmd[strlen(cmd)] = '\0';							
 				n = write(client_socket_fd, cmd, strlen(cmd));//write 'pitch' to socket to request pitch data
 				if (n < 0) {
 				    server_error("ERROR writing to socket");
@@ -688,17 +690,17 @@ int main(int argc, char **argv)
 	//clients *clientThreads = calloc(4,sizeof(CONNECTION*));	
 	
 	clients *clientThread_0 = calloc(1,sizeof(clients));
-	clients *clientThread_1 = calloc(1,sizeof(clients));
+	//clients *clientThread_1 = calloc(1,sizeof(clients));
 	//clients *clientThread_2 = calloc(1,sizeof(clients));
 	//clients *clientThread_3 = calloc(1,sizeof(clients));
 
 	clientThread_0->index = 0;
-	clientThread_1->index = 1;
+	//clientThread_1->index = 1;
 	//clientThread_2->index = 2;
 	//clientThread_3->index = 3;
 
 	clientThread_0->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
 
@@ -729,7 +731,7 @@ int main(int argc, char **argv)
 		int i;
 	//while(1) {
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThread_0);
-	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
+	    //pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
 	    //pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
 	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
 	    /*
@@ -748,8 +750,8 @@ int main(int argc, char **argv)
 	    
 	    pthread_join(manage_9dof_tid, NULL);
 	    pthread_join(tids[0], NULL);
-	    pthread_join(tids[1], NULL);
-	    pthread_join(tids[2], NULL);
+	    //pthread_join(tids[1], NULL);
+	    //pthread_join(tids[2], NULL);
 	    //pthread_join(tids[3], NULL);
    	
 	 
@@ -798,8 +800,10 @@ int main(int argc, char **argv)
 		// RE-CHECK IF OUTPUT IS AFTER EVERY DATA SET		
 	    }
 
-	    fclose(fp);
-	    		
+	    fclose(fp);	
+	    close(clientThread_0->client->sockfd);
+	    //close(clientThread_1->client->sockfd);
+	    //close(clientThread_2->client->sockfd);
 	    /*
 	    server_pitch_avg = (server_pitch_sum/150+90)/180;
 	    server_roll_avg = (server_roll_sum/150+90)/180;
