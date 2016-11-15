@@ -327,18 +327,18 @@ int main(int argc, char **argv)
 	//clients *clientThreads = calloc(4,sizeof(CONNECTION*));	
 	
 	clients *clientThread_0 = calloc(1,sizeof(clients));
-	//clients *clientThread_1 = calloc(1,sizeof(clients));
-	//clients *clientThread_2 = calloc(1,sizeof(clients));
+	clients *clientThread_1 = calloc(1,sizeof(clients));
+	clients *clientThread_2 = calloc(1,sizeof(clients));
 	//clients *clientThread_3 = calloc(1,sizeof(clients));
 
 	clientThread_0->index = 0;
-	//clientThread_1->index = 1;
-	//clientThread_2->index = 2;
+	clientThread_1->index = 1;
+	clientThread_2->index = 2;
 	//clientThread_3->index = 3;
 
 	clientThread_0->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	//clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	//clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
 
 	//clientThreads->client[0] = (CONNECTION*) server_accept_connection(server->sockfd);
@@ -368,8 +368,8 @@ int main(int argc, char **argv)
 		int i;
 	while(1) {
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThread_0);
-	    //pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
-	    //pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
+	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
+	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
 	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
 	    /*
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThreads->client[0]);
@@ -387,8 +387,8 @@ int main(int argc, char **argv)
 	    
 	    pthread_join(manage_9dof_tid, NULL);
 	    pthread_join(tids[0], NULL);
-	    //pthread_join(tids[1], NULL);
-	    //pthread_join(tids[2], NULL);
+	    pthread_join(tids[1], NULL);
+	    pthread_join(tids[2], NULL);
 	    //pthread_join(tids[3], NULL);
    	
 	 

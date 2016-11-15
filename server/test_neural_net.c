@@ -433,7 +433,7 @@ int main(int argc, char **argv)
 	    server_pitch_avg = (server_pitch_sum/150+90)/180;
 	    server_roll_avg = (server_roll_sum/150+90)/180;
 	    client0_pitch_avg = (client0_pitch_sum/150+90)/180;
-	    client0_pitch_avg = (client0_pitch_sum/150+90)/180;
+	    client0_roll_avg = (client0_roll_sum/150+90)/180;
 	    client1_pitch_avg = (client1_pitch_sum/150+90)/180;
 	    client1_roll_avg = (client1_roll_sum/150+90)/180;
 	    client2_pitch_avg = (client2_pitch_sum/150+90)/180;
