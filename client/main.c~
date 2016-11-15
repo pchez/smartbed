@@ -77,7 +77,7 @@ void* client_handle_connection(void *arg)
 	int n;
 	int rc;
 	//float *pitch, *roll;
-	char buffer[256]="strnings";
+	char buffer[256]="strings";
 	double sec_since_epoch;
 
 	//memset(buffer, 0, 256);
@@ -85,7 +85,7 @@ void* client_handle_connection(void *arg)
 	printf("msg from server:\n ");
 	
 	int client;
-	client=*(int *)arg;
+	client = *(int *)arg;
 	
 	while (run_flag) 
 	{
@@ -93,10 +93,8 @@ void* client_handle_connection(void *arg)
 		
 		// timestamp right before read 9DOF data
 		sec_since_epoch = timestamp();
-		//ninedof_read(ninedof,(pitch),(roll));
 		int i;
 
-		//for(i=0;i<151;i++)
 		printf("waiting\n");
 
 		rc=pthread_mutex_lock(&m);
@@ -105,32 +103,29 @@ void* client_handle_connection(void *arg)
 		    printf("lock bsy\n");
 		    continue;	
 		}
-		printf("inside\n");
-		while(done ==0)
+		while(done==0)
 			pthread_cond_wait(&c, &m);
 		
+		for(i=0; i<151; i++)
+		    printf("%f\n", pitch_buffer[i]);	
 		
-		printf("raed is %d\n", done);
-		for(i=0;i<151;i++)
-		    printf("%f\n",pitch_buffer[i]);	
-		//n=read(client,buffer,256);
-		n=read(client,buffer,sizeof(buffer));
-		if(!strcmp(buffer,"a")) {
-		    printf("I am here!\n");
+		n = read(client, buffer, sizeof(buffer));
+		if (n > 0 && strcmp(buffer, "p")==0)
+		{
+			n = write(client, pitch_buffer, 604);
+			if (n < 0) {
+		    		client_error("ERROR writing to socket");
+			}
 		}
-		printf("Pre Write to server\n");
-		n = write(client,pitch_buffer, 604);
-		printf("Post write to server\n");
-		if(n<0) {
-		    client_error("ERROR writing to socket");
+		n = read(client, buffer, sizeof(buffer));
+		if (n > 0 && strcmp(buffer, "r" )==0)
+		{
+			n = write(client, pitch_buffer, 604);
+			if (n < 0) {
+				client_error("ERROR writing to socket");
+			}
 		}
-		//n = read(client_socket_fd, buffer, strlen(buffer));
-		//n = write(client_socket_fd, pitch_buffer, 604);
-		/*	if (n < 0){
-			printf("zero");
-			return 0;
-		}
-		*/
+		
 		printf("numbe of bytesi s%d\n",n);
 
 		//memset(buffer, 0, 256);
