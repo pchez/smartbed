@@ -462,7 +462,7 @@ int main(int argc, char **argv)
 		
 	     FILE *fp;
 	     fp = fopen("train_data.txt", "a");
-	     fprintf(fp, "1050\t8\t7\n");
+	     //fprintf(fp, "1050\t8\t7\n"); // CHECK THIS MIGHT BE ISSUE (CHAR OR DECIMAL)
 
 	   
 	    for(i=0; i < 150; i++) {
@@ -479,13 +479,13 @@ int main(int argc, char **argv)
 		    server_pitch_avg = (server_pitch_sum+90)/180;
 	   	    server_roll_avg = (server_roll_sum+90)/180;
 	            client0_pitch_avg = (client0_pitch_sum+90)/180;
-	   	    client0_roll_avg = (client0_pitch_sum+90)/180;
+	   	    client0_roll_avg = (client0_roll_sum+90)/180;
 	   	    client1_pitch_avg = (client1_pitch_sum+90)/180;
 	   	    client1_roll_avg = (client1_roll_sum+90)/180;
 	    	    client2_pitch_avg = (client2_pitch_sum+90)/180;
 	    	    client2_roll_avg = (client2_roll_sum+90)/180;
 		fprintf(fp,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", server_pitch_avg, server_roll_avg, client0_pitch_avg, client0_roll_avg, client1_pitch_avg, client1_roll_avg, client2_pitch_avg, client2_roll_avg);
-		fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 1,0,0,0,0,0,0);		
+		fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,0,1);		
 	    }
 
 	    fclose(fp);	
