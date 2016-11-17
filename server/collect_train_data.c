@@ -348,10 +348,11 @@ int main(int argc, char **argv)
 {
 	pthread_t manage_9dof_tid; //, manage_server_tid;
 	int rc;
-	fann_type *output;
-	fann_type input[4];
-	struct fann *ann;
-	int k, max, patient_location;
+	//fann_type *output;
+	//fann_type input[4];
+	//struct fann *ann;
+	//int k, max, patient_location;
+	char position = argv[1][0];
 
 	signal(SIGINT, do_when_interrupted);
 
@@ -388,11 +389,6 @@ int main(int argc, char **argv)
 	clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
 
-	//clientThreads->client[0] = (CONNECTION*) server_accept_connection(server->sockfd);
-	//clientThreads->client[1] = (CONNECTION*) server_accept_connection(server->sockfd);
-	//clientThreads->client[2] = (CONNECTION*) server_accept_connection(server->sockfd);
-	//clientThreads->client[3] = (CONNECTION*) server_accept_connection(server->sockfd);
-
             float server_pitch_avg = 0;
 	    float server_roll_avg = 0;
 	    float server_pitch_sum = 0; 
@@ -410,21 +406,13 @@ int main(int argc, char **argv)
 	    float client2_pitch_sum = 0;
 	    float client2_roll_sum = 0;
 	
-
-
-		int i;
+	    int i;
 	//while(1) {
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThread_0);
 	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
 	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
-	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
-	    /*
-	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThreads->client[0]);
-	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
-	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThreads->client[2]);
-	    pthread_create(&tids[3], NULL, handle_client, (void*)clientThreads->client[3]);
-	    */
-	    //
+	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);i
+	 
 	    clientCount = 0; //reset client count    
 	    rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
 	    if (rc != 0) {
@@ -462,8 +450,6 @@ int main(int argc, char **argv)
 		
 	     FILE *fp;
 	     fp = fopen("train_data.txt", "a");
-	     //fprintf(fp, "1050\t8\t7\n"); // CHECK THIS MIGHT BE ISSUE (CHAR OR DECIMAL)
-
 	   
 	    for(i=0; i < 150; i++) {
 		    server_pitch_sum = Angle_Buffer_server.pitchBuffer[i];
@@ -485,7 +471,33 @@ int main(int argc, char **argv)
 	    	    client2_pitch_avg = (client2_pitch_sum+90)/180;
 	    	    client2_roll_avg = (client2_roll_sum+90)/180;
 		fprintf(fp,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", server_pitch_avg, server_roll_avg, client0_pitch_avg, client0_roll_avg, client1_pitch_avg, client1_roll_avg, client2_pitch_avg, client2_roll_avg);
-		fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,0,1);		
+
+		switch(position) {
+		   case '0':
+			fprintf(fp, "1050\t8\t7\n"); 		
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 1,0,0,0,0,0,0);
+			break;
+		   case '1':
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,1,0,0,0,0,0);
+			break;
+		   case '2':
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,1,0,0,0,0);
+			break;
+		   case '3':
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,1,0,0,0);
+			break;
+		   case '4':
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,1,0,0);
+			break;
+		   case '5':
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,1,0);
+			break;
+		   case '6':
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,0,1);
+			break;
+		   default:
+			printf("Bruh\n");
+		}		
 	    }
 
 	    fclose(fp);	

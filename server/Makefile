@@ -2,11 +2,11 @@ CC=gcc
 CFLAGS=-c -g -Wall
 LDFLAGS=-lmraa -lm -pthread -lfann
 #SOURCES=test_neural_net.c 9DOF.c server.c LSM9DS0.c
-SOURCES=test_neural_net.c 9DOF.c server.c LSM9DS0.c
+SOURCES=collect_train_data.c 9DOF.c server.c LSM9DS0.c
 #SOURCESNEW=train_neural_net.c 
 OBJECTS=$(SOURCES:.c=.o)
 #EXECUTABLE=test_neural_net
-EXECUTABLE=test_neural_net
+EXECUTABLE=collect_train_data
 #EXECUTABLENEW = train_neural_net
 
 all: $(SOURCES) $(EXECUTABLE)
@@ -26,8 +26,8 @@ clean:
 	rm -rf $(EXECUTABLE)
 	#rm -rf $(EXECUTABLENEW)
 	rm -rf $(OBJECTS)
-	#rm -rf TEST.net
-	#rm -rf train_data.txt
+	rm -rf TEST.net
+	rm -rf train_data.txt
 	rm -rf test_data.txt
 
 clobber: clean
