@@ -184,7 +184,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 				}
 				//printf("client is ready, sent pitch command\n");
 
-				printf("Reading pitch data from client\n");
+				//printf("Reading pitch data from client\n");
 				n = read(client_socket_fd, buffer, NUMDATAPTS*4);
 				//printf("Post read from client\n");
 
@@ -236,7 +236,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 				sprintf(cmd,"roll");
 				cmd[strlen(cmd)] = '\0';
 				n=write(client_socket_fd, cmd, strlen(cmd));
-				printf("Sent client %s\n", cmd);
+				//printf("Sent client %s\n", cmd);
 				if(n<0) {
 				    server_error("ERROR writing to socket");
 				}
@@ -471,7 +471,7 @@ int main(int argc, char **argv)
 		    }
 	    }
 	    printf("Patient is at location %d\n", patient_location); 
-	
+	    printf("-------------------------------------------------------\n");	
 	}
 	close(clientThread_0->client->sockfd);
 	close(clientThread_1->client->sockfd);

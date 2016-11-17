@@ -346,6 +346,11 @@ void* manage_server(void *arg)
 
 int main(int argc, char **argv)
 {
+
+    	if(argc != 1) {
+		printf("Invalid # of arguments, exiting!");
+		return -1;
+	}
 	pthread_t manage_9dof_tid; //, manage_server_tid;
 	int rc;
 	//fann_type *output;
