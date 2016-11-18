@@ -475,11 +475,13 @@ int main(int argc, char **argv)
 	   	    client1_roll_avg = (client1_roll_sum+90)/180;
 	    	    client2_pitch_avg = (client2_pitch_sum+90)/180;
 	    	    client2_roll_avg = (client2_roll_sum+90)/180;
+		    if(position == '0' && i == 0) {
+			fprintf(fp,"%d\t%d\t%d\n", 1050, 8, 7);
+		    }
 		fprintf(fp,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", server_pitch_avg, server_roll_avg, client0_pitch_avg, client0_roll_avg, client1_pitch_avg, client1_roll_avg, client2_pitch_avg, client2_roll_avg);
 
 		switch(position) {
 		   case '0':
-			fprintf(fp, "1050\t8\t7\n"); 		
 			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 1,0,0,0,0,0,0);
 			break;
 		   case '1':
