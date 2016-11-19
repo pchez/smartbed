@@ -293,7 +293,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		}
 	}
 
-	close(client_socket_fd);
+	//close(client_socket_fd);
 	//pthread_exit((void*)client);
 	return NULL;
 }
