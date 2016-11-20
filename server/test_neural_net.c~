@@ -42,7 +42,7 @@ struct Angle_Buffer Angle_Buffer_server;
 struct Angle_Buffer Angle_Buffer_client_1;
 struct Angle_Buffer Angle_Buffer_client_2;
 struct Angle_Buffer Angle_Buffer_client_3;
-
+//struct Angle_Buffer Angle_Buffer_client_4;
 
 
 
@@ -330,17 +330,17 @@ int main(int argc, char **argv)
 	clients *clientThread_0 = calloc(1,sizeof(clients));
 	clients *clientThread_1 = calloc(1,sizeof(clients));
 	clients *clientThread_2 = calloc(1,sizeof(clients));
-	//clients *clientThread_3 = calloc(1,sizeof(clients));
+	clients *clientThread_3 = calloc(1,sizeof(clients));
 
 	clientThread_0->index = 0;
 	clientThread_1->index = 1;
 	clientThread_2->index = 2;
-	//clientThread_3->index = 3;
+	clientThread_3->index = 3;
 
 	clientThread_0->client = (CONNECTION*) server_accept_connection(server->sockfd);
 	clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
 	clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	//clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
 
 	//clientThreads->client[0] = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThreads->client[1] = (CONNECTION*) server_accept_connection(server->sockfd);
@@ -409,7 +409,7 @@ int main(int argc, char **argv)
 	     client2_roll_avg = 0; 
 	     client2_pitch_sum = 0;
 	     client2_roll_sum = 0;
-	    //float client3_pitch_avg, client3_roll_avg, client3_pitch_sum, client3_roll_sum;
+	    float client3_pitch_avg=0, client3_roll_avg=0, client3_pitch_sum=0, client3_roll_sum=0;
 	    //float client4_pitch_avg, client4_roll_avg, client4_pitch_sum, client4_roll_sum;
 
 	    //float clients_pitch_avg[4], clients_roll_avg[4];	
@@ -417,53 +417,53 @@ int main(int argc, char **argv)
 	    
 	   
 	    for(i=0; i < 150; i++) {
-		    server_pitch_sum += Angle_Buffer_server.pitchBuffer[i];
-		    server_roll_sum += Angle_Buffer_server.rollBuffer[i];
+	//	    server_pitch_sum += Angle_Buffer_server.pitchBuffer[i];
+	//	    server_roll_sum += Angle_Buffer_server.rollBuffer[i];
 		    client0_pitch_sum += Angle_Buffer_client_0.pitchBuffer[i];
 		    client0_roll_sum += Angle_Buffer_client_0.rollBuffer[i];
 		    client1_pitch_sum += Angle_Buffer_client_1.pitchBuffer[i];
 		    client1_roll_sum += Angle_Buffer_client_1.rollBuffer[i];
 		    client2_pitch_sum += Angle_Buffer_client_2.pitchBuffer[i];
 		    client2_roll_sum += Angle_Buffer_client_2.rollBuffer[i];
-		    //client3_pitch_sum += Angle_Buffer_client_3.pitchBuffer[i];
-		    //client3_roll_sum += Angle_Buffer_client_3.rollBuffer[i];
+		    client3_pitch_sum += Angle_Buffer_client_3.pitchBuffer[i];
+		    client3_roll_sum += Angle_Buffer_client_3.rollBuffer[i];
 	
 	    }
 	    		
 	    
-	    server_pitch_avg = (server_pitch_sum/150+90)/180;
-	    server_roll_avg = (server_roll_sum/150+90)/180;
+	   // server_pitch_avg = (server_pitch_sum/150+90)/180;
+	    //server_roll_avg = (server_roll_sum/150+90)/180;
 	    client0_pitch_avg = (client0_pitch_sum/150+90)/180;
 	    client0_roll_avg = (client0_roll_sum/150+90)/180;
 	    client1_pitch_avg = (client1_pitch_sum/150+90)/180;
 	    client1_roll_avg = (client1_roll_sum/150+90)/180;
 	    client2_pitch_avg = (client2_pitch_sum/150+90)/180;
 	    client2_roll_avg = (client2_roll_sum/150+90)/180;
-	    //client3_pitch_avg = (client3_pitch_sum/150+90)/180;
-	    //client3_roll_avg = (client3_roll_sum/150+90)/180;
+	    client3_pitch_avg = (client3_pitch_sum/150+90)/180;
+	    client3_roll_avg = (client3_roll_sum/150+90)/180;
 	    
 	    //test the neural network
 	    //printf("before creating ann from TEST.net\n");
 	    ann = fann_create_from_file("TEST.net");
 	    //printf("after creating ann from TEST.net\n");
 	    
-	    input[0] = server_pitch_avg;
-	    input[1] = server_roll_avg;
-	    input[2] = client0_pitch_avg;
-	    input[3] = client0_roll_avg;
-	    input[4] = client1_pitch_avg;
-	    input[5] = client1_roll_avg;
-	    input[6] = client2_pitch_avg;
-	    input[7] = client2_roll_avg;
-	    //input[8] = client3_pitch_avg;
-	    //input[9] = client3_roll_avg;
+	    //input[0] = server_pitch_avg;
+	    //input[1] = server_roll_avg;
+	    input[0] = client0_pitch_avg;
+	    input[1] = client0_roll_avg;
+	    input[2] = client1_pitch_avg;
+	    input[3] = client1_roll_avg;
+	    input[4] = client2_pitch_avg;
+	    input[5] = client2_roll_avg;
+	    input[6] = client3_pitch_avg;
+	    input[7] = client3_roll_avg;
 	    
 	    //printf("before fann_run\n");
 	    output = fann_run(ann, input);
 	    //printf("after fann_run\n");
 	    max = output[0];
 	    patient_location = 0;
-	    for (k=0; k<7; k++) {
+	    for (k=0; k<2; k++) {
 			printf("output[%d] = %f\n",k,output[k]); 
 		    if (output[k] > max) {
 			    max = output[k];
@@ -476,7 +476,7 @@ int main(int argc, char **argv)
 	close(clientThread_0->client->sockfd);
 	close(clientThread_1->client->sockfd);
 	close(clientThread_2->client->sockfd);
-
+	close(clientThread_3->client->sockfd);
 
 	printf("\n...cleanup operations complete. Exiting main.\n");
 

@@ -42,7 +42,7 @@ struct Angle_Buffer Angle_Buffer_server;
 struct Angle_Buffer Angle_Buffer_client_1;
 struct Angle_Buffer Angle_Buffer_client_2;
 struct Angle_Buffer Angle_Buffer_client_3;
-
+struct Angle_Buffer Angle_Buffer_client_4;
 
 
 
@@ -228,6 +228,13 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 				       		Angle_Buffer_client_3.pitchBuffer[i-1] = buffer[i];
 				  	 }
 					 break;
+					case 4:
+					 printf("Received Pitch Data from Thread 4: \n");
+					 for(i=1;i<NUMDATAPTS;i++){
+					 	printf("%f\n", buffer[i]);
+						Angle_Buffer_client_4.pitchBuffer[i-1] = buffer[i];
+					 }
+					break;
 					default:
 					 printf("I shouldn't be here! \n");
 				   } // end of case statement
@@ -277,6 +284,14 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 				       		Angle_Buffer_client_3.rollBuffer[i-1] = buffer[i];
 				  	 }
 					 break;
+					case 4:
+					 printf("Received Roll data from thread4: \n");
+					for(i=1;i<NUMDATAPTS;i++)
+					{
+					    printf("%f\n",buffer[i]);
+					    Angle_Buffer_client_3.rollBuffer[i-1] = buffer[i];
+					}
+					
 					default:
 					 printf("I shouldn't be here! Again... \n");
 				   } // end of case statement
@@ -347,7 +362,7 @@ void* manage_server(void *arg)
 int main(int argc, char **argv)
 {
 
-    	if(argc != 1) {
+    	if(argc != 2) {
 		printf("Invalid # of arguments, exiting!");
 		return -1;
 	}
@@ -382,17 +397,17 @@ int main(int argc, char **argv)
 	clients *clientThread_0 = calloc(1,sizeof(clients));
 	clients *clientThread_1 = calloc(1,sizeof(clients));
 	clients *clientThread_2 = calloc(1,sizeof(clients));
-	//clients *clientThread_3 = calloc(1,sizeof(clients));
+	clients *clientThread_3 = calloc(1,sizeof(clients));
 
 	clientThread_0->index = 0;
 	clientThread_1->index = 1;
 	clientThread_2->index = 2;
-	//clientThread_3->index = 3;
+	clientThread_3->index = 3;
 
 	clientThread_0->client = (CONNECTION*) server_accept_connection(server->sockfd);
 	clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
 	clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	//clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
 
             float server_pitch_avg = 0;
 	    float server_roll_avg = 0;
@@ -410,26 +425,29 @@ int main(int argc, char **argv)
 	    float client2_roll_avg = 0; 
 	    float client2_pitch_sum = 0;
 	    float client2_roll_sum = 0;
-	
+		float client3_roll_avg=0;
+	float client3_roll_sum=0;
+	float client3_pitch_sum=0;
+	float client3_pitch_avg=0;	
 	    int i;
 	//while(1) {
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThread_0);
 	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
 	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
-	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);i
+	    pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
 	 
 	    clientCount = 0; //reset client count    
-	    rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
+	    /*rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
 	    if (rc != 0) {
 		fprintf(stderr, "Failed to create manage_9dof thread. Exiting Program.\n");
 		exit(0);
 	    }
 	    
-	    pthread_join(manage_9dof_tid, NULL);
+	    pthread_join(manage_9dof_tid, NULL);*/
 	    pthread_join(tids[0], NULL);
 	    pthread_join(tids[1], NULL);
 	    pthread_join(tids[2], NULL);
-	    //pthread_join(tids[3], NULL);
+	    pthread_join(tids[3], NULL);
    	
 	 
 	    server_pitch_avg = 0;
@@ -448,6 +466,10 @@ int main(int argc, char **argv)
 	     client2_roll_avg = 0; 
 	     client2_pitch_sum = 0;
 	     client2_roll_sum = 0;
+	     client3_roll_sum=0;
+	     client3_roll_avg=0;
+	     client3_pitch_avg=0;
+	     client3_pitch_sum=0;
 	    //float client3_pitch_avg, client3_roll_avg, client3_pitch_sum, client3_roll_sum;
 	    //float client4_pitch_avg, client4_roll_avg, client4_pitch_sum, client4_roll_sum;
 
@@ -457,28 +479,30 @@ int main(int argc, char **argv)
 	     fp = fopen("train_data.txt", "a");
 	   
 	    for(i=0; i < 150; i++) {
-		    server_pitch_sum = Angle_Buffer_server.pitchBuffer[i];
-		    server_roll_sum = Angle_Buffer_server.rollBuffer[i];
+		    //server_pitch_sum = Angle_Buffer_server.pitchBuffer[i];
+		    //server_roll_sum = Angle_Buffer_server.rollBuffer[i];
 		    client0_pitch_sum = Angle_Buffer_client_0.pitchBuffer[i];
 		    client0_roll_sum = Angle_Buffer_client_0.rollBuffer[i];
 		    client1_pitch_sum = Angle_Buffer_client_1.pitchBuffer[i];
 		    client1_roll_sum = Angle_Buffer_client_1.rollBuffer[i];
 		    client2_pitch_sum = Angle_Buffer_client_2.pitchBuffer[i];
 		    client2_roll_sum = Angle_Buffer_client_2.rollBuffer[i];
-		    //client3_pitch_sum += Angle_Buffer_client_3.pitchBuffer[i];
-		    //client3_roll_sum += Angle_Buffer_client_3.rollBuffer[i];
-		    server_pitch_avg = (server_pitch_sum+90)/180;
-	   	    server_roll_avg = (server_roll_sum+90)/180;
+		    client3_pitch_sum = Angle_Buffer_client_3.pitchBuffer[i];
+		    client3_roll_sum = Angle_Buffer_client_3.rollBuffer[i];
+		    //server_pitch_avg = (server_pitch_sum+90)/180;
+	   	    //server_roll_avg = (server_roll_sum+90)/180;
 	            client0_pitch_avg = (client0_pitch_sum+90)/180;
 	   	    client0_roll_avg = (client0_roll_sum+90)/180;
 	   	    client1_pitch_avg = (client1_pitch_sum+90)/180;
 	   	    client1_roll_avg = (client1_roll_sum+90)/180;
 	    	    client2_pitch_avg = (client2_pitch_sum+90)/180;
 	    	    client2_roll_avg = (client2_roll_sum+90)/180;
+		    client3_pitch_avg= (client3_pitch_sum+90)/180;
+		    client3_roll_avg=(client3_roll_sum+90)/180;
 		    if(position == '0' && i == 0) {
-			fprintf(fp,"%d\t%d\t%d\n", 1050, 8, 7);
+			fprintf(fp,"%d\t%d\t%d\n", 300, 8, 2);
 		    }
-		fprintf(fp,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", server_pitch_avg, server_roll_avg, client0_pitch_avg, client0_roll_avg, client1_pitch_avg, client1_roll_avg, client2_pitch_avg, client2_roll_avg);
+		fprintf(fp,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",  client0_pitch_avg, client0_roll_avg, client1_pitch_avg, client1_roll_avg, client2_pitch_avg, client2_roll_avg,client3_pitch_avg,client3_roll_avg);
 
 		switch(position) {
 		   case '0':
@@ -511,7 +535,7 @@ int main(int argc, char **argv)
 	    close(clientThread_0->client->sockfd);
 	    close(clientThread_1->client->sockfd);
 	    close(clientThread_2->client->sockfd);
-	   
+	  	close(clientThread_3->client->sockfd); 
 	printf("\n...cleanup operations complete. Exiting main.\n");
 
 	return 0;

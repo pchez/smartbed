@@ -2,7 +2,7 @@
 
 int main() {
     const unsigned int num_input = 8;
-    const unsigned int num_output = 7;
+    const unsigned int num_output = 2;
     const unsigned int num_layers = 3;
     const unsigned int num_neurons_hidden = 8;
     const float desired_error = (const float) 0.0001;
