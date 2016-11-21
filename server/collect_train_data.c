@@ -12,11 +12,11 @@
 #include "LSM9DS0.h"
 
 #define PORTNO 5000
-
+#define NUMCLIENTS 4
 #define NUMDATAPTS 151
 #define PI 3.14159265358979
 static volatile int run_flag = 1;
-static volatile int collect_flag;
+int collect_flag[4];
 int shared_array_index = 0;
 pthread_mutex_t lock;
 
@@ -145,7 +145,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	float *buffer;
 	buffer = calloc(NUMDATAPTS,sizeof(float));
 	char ready_buf[10];
-	collect_flag = 1;
+	
 	//client = (CONNECTION *)arg;
 	client_struct = (clients*)arg;
 	client_socket_fd = client_struct->client->sockfd;
@@ -155,14 +155,15 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	//memset(buffer, 0, 256);
 	
 	
-	int index = client_struct->index;			//private variable - each thread will have its own copy. this is the array index of client_data's arrays in which this thread will store into 
+	int index = client_struct->index;
+	collect_flag[index]=1;	//private variable - each thread will have its own copy. this is the array index of client_data's arrays in which this thread will store into 
 	//pthread_mutex_lock(&lock);	//begin critical section
 	//index = shared_array_index;	//assign this shared variable to the private index variable so now each thread keeps track of its own unique index	
 	//shared_array_index += 1;	//increment the shared variable - first thread to access this variable gets index=0, second thread gets index=1, etc
 	//pthread_mutex_unlock(&lock);	//end critical section
 	
 	
-	while (collect_flag) {
+	while (collect_flag[index]) {
 		int i;
 	    	memset(buffer, 0, 256);
 		memset(cmd, 0, sizeof(cmd));
@@ -176,7 +177,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		else {
 			//printf("client sent us: %s\n", buffer);
 			if (strcmp(ready_buf, "ready")==0) {	//if we read that the client is ready
-				collect_flag = 0;
+				collect_flag[index] = 0;
 			        cmd[strlen(cmd)] = '\0';							
 				n = write(client_socket_fd, cmd, strlen(cmd));//write 'pitch' to socket to request pitch data
 				if (n < 0) {
@@ -500,33 +501,37 @@ int main(int argc, char **argv)
 		    client3_pitch_avg= (client3_pitch_sum+90)/180;
 		    client3_roll_avg=(client3_roll_sum+90)/180;
 		    if(position == '0' && i == 0) {
-			fprintf(fp,"%d\t%d\t%d\n", 300, 8, 2);
+			fprintf(fp,"%d\t%d\t%d\n", 900, 8, 6);
 		    }
 		fprintf(fp,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",  client0_pitch_avg, client0_roll_avg, client1_pitch_avg, client1_roll_avg, client2_pitch_avg, client2_roll_avg,client3_pitch_avg,client3_roll_avg);
 
 		switch(position) {
 		   case '0':
-			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 1,0,0,0,0,0,0);
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\n", 1,0,0,0,0,0);
 			break;
 		   case '1':
-			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,1,0,0,0,0,0);
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\n", 0,1,0,0,0,0);
 			break;
 		   case '2':
-			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,1,0,0,0,0);
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,1,0,0,0);
 			break;
 		   case '3':
-			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,1,0,0,0);
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,1,0,0);
 			break;
 		   case '4':
-			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,1,0,0);
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,1,0);
 			break;
 		   case '5':
-			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,1,0);
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,1);
 			break;
-		   case '6':
-			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,0,1);
+	/*	   case '6':
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,0,1,0);
 			break;
-		   default:
+		   case '7':
+			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,0,0,1);
+			break;
+		*/
+		     	default:
 			printf("Bruh\n");
 		}		
 	    }
@@ -535,7 +540,7 @@ int main(int argc, char **argv)
 	    close(clientThread_0->client->sockfd);
 	    close(clientThread_1->client->sockfd);
 	    close(clientThread_2->client->sockfd);
-	  	close(clientThread_3->client->sockfd); 
+	    close(clientThread_3->client->sockfd); 
 	printf("\n...cleanup operations complete. Exiting main.\n");
 
 	return 0;

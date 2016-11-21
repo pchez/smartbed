@@ -16,7 +16,7 @@
 #define NUMDATAPTS 151
 #define PI 3.14159265358979
 static volatile int run_flag = 1;
-static volatile int connect_flag = 1;
+int connect_flag[4] ;
 int shared_array_index = 0;
 pthread_mutex_t lock;
 
@@ -145,7 +145,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	float *buffer;
 	buffer = calloc(NUMDATAPTS,sizeof(float));
 	char ready_buf[10];
-	connect_flag = 1;	
+		
 	//client = (CONNECTION *)arg;
 	client_struct = (clients*)arg;
 	client_socket_fd = client_struct->client->sockfd;
@@ -155,14 +155,16 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	//memset(buffer, 0, 256);
 	
 	
-	int index = client_struct->index;			//private variable - each thread will have its own copy. this is the array index of client_data's arrays in which this thread will store into 
+	int index = client_struct->index;	
+	connect_flag[index]=1;
+	//private variable - each thread will have its own copy. this is the array index of client_data's arrays in which this thread will store into 
 	//pthread_mutex_lock(&lock);	//begin critical section
 	//index = shared_array_index;	//assign this shared variable to the private index variable so now each thread keeps track of its own unique index	
 	//shared_array_index += 1;	//increment the shared variable - first thread to access this variable gets index=0, second thread gets index=1, etc
 	//pthread_mutex_unlock(&lock);	//end critical section
 	
 	
-	while (connect_flag) {
+	while (connect_flag[index]) {
 		int i;
 	    	memset(buffer, 0, 256);
 		memset(cmd, 0, sizeof(cmd));
@@ -176,7 +178,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 		else {
 			//printf("client sent us: %s\n", buffer);
 			if (strcmp(ready_buf, "ready")==0) {	//if we read that the client is ready
-				connect_flag = 0;
+				connect_flag[index] = 0;
 			        cmd[strlen(cmd)] = '\0';							
 				n = write(client_socket_fd, cmd, strlen(cmd));//write 'pitch' to socket to request pitch data
 				if (n < 0) {
@@ -371,7 +373,7 @@ int main(int argc, char **argv)
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThread_0);
 	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
 	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
-	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
+	    pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
 	    /*
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThreads->client[0]);
 	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
@@ -380,17 +382,17 @@ int main(int argc, char **argv)
 	    */
 	    //
 	    clientCount = 0; //reset client count    
-	    rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
+	    /*rc = pthread_create(&manage_9dof_tid, NULL, manage_9dof, NULL);
 	    if (rc != 0) {
 		fprintf(stderr, "Failed to create manage_9dof thread. Exiting Program.\n");
 		exit(0);
 	    }
 	    
-	    pthread_join(manage_9dof_tid, NULL);
+	    pthread_join(manage_9dof_tid, NULL);*/
 	    pthread_join(tids[0], NULL);
 	    pthread_join(tids[1], NULL);
 	    pthread_join(tids[2], NULL);
-	    //pthread_join(tids[3], NULL);
+	    pthread_join(tids[3], NULL);
    	
 	 
 	     server_pitch_avg = 0;
@@ -463,7 +465,7 @@ int main(int argc, char **argv)
 	    //printf("after fann_run\n");
 	    max = output[0];
 	    patient_location = 0;
-	    for (k=0; k<2; k++) {
+	    for (k=0; k<6; k++) {
 			printf("output[%d] = %f\n",k,output[k]); 
 		    if (output[k] > max) {
 			    max = output[k];
