@@ -501,10 +501,29 @@ int main(int argc, char **argv)
 		    client3_pitch_avg= (client3_pitch_sum+90)/180;
 		    client3_roll_avg=(client3_roll_sum+90)/180;
 		    if(position == '0' && i == 0) {
-			fprintf(fp,"%d\t%d\t%d\n", 900, 8, 6);
+			fprintf(fp,"%d\t%d\t%d\n", 600, 8, 4);
 		    }
 		fprintf(fp,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",  client0_pitch_avg, client0_roll_avg, client1_pitch_avg, client1_roll_avg, client2_pitch_avg, client2_roll_avg,client3_pitch_avg,client3_roll_avg);
 
+		switch(position) {
+		    case '0': //no one on bed
+			fprintf(fp, "%d\t%d\t%d\t%d\t", 1,0,0,0);
+			break;
+		    case '1': //lying middle
+			fprintf(fp, "%d\t%d\t%d\t%d\t", 0,1,0,0);
+			break;
+		    case '2': //lying right
+			fprintf(fp, "%d\t%d\t%d\t%d\t", 0,0,1,0);
+			break;
+		    case '3': //lying left
+			fprintf(fp, "%d\t%d\t%d\t%d\t", 0,0,0,1);
+			break;
+		    default:
+			printf("bruh\n");	
+		}	
+	    }
+
+		/*
 		switch(position) {
 		   case '0':
 			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\n", 1,0,0,0,0,0);
@@ -524,18 +543,18 @@ int main(int argc, char **argv)
 		   case '5':
 			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,1);
 			break;
-	/*	   case '6':
+		   case '6':
 			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,0,1,0);
 			break;
 		   case '7':
 			fprintf(fp,"%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 0,0,0,0,0,0,0,1);
 			break;
-		*/
+	
 		     	default:
 			printf("Bruh\n");
 		}		
 	    }
-
+	*/	
 	    fclose(fp);	
 	    close(clientThread_0->client->sockfd);
 	    close(clientThread_1->client->sockfd);

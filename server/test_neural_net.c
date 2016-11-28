@@ -465,7 +465,7 @@ int main(int argc, char **argv)
 	    //printf("after fann_run\n");
 	    max = output[0];
 	    patient_location = 0;
-	    for (k=0; k<6; k++) {
+	    for (k=0; k<4; k++) {
 			printf("output[%d] = %f\n",k,output[k]); 
 		    if (output[k] > max) {
 			    max = output[k];
