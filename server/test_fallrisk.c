@@ -309,6 +309,8 @@ int main(int argc, char **argv)
 	struct fann *ann;
 	struct fann *fall_ann;
 	int k, patient_location, fall_risk;
+        int prev_loc = -1;
+	int prev_risk = -1;
 	float danger_value;
 	struct Queue* fall_queue = malloc(sizeof(struct Queue)); //queue for storing data for neural network
 
@@ -473,8 +475,11 @@ int main(int argc, char **argv)
 			    patient_location = k;
 		    }
 	    }
-	    printf("Patient is at location %d\n", patient_location); 
-	    printf("-------------------------------------------------------\n");
+	    if(prev_loc != patient_location) {
+		printf("Patient is at location %d\n", patient_location); 
+		printf("-------------------------------------------------------\n");
+	    }
+	    prev_loc = patient_location;
     	 
     	//--fall risk neural network changes below--delete to revert
     	//map patient location to a danger value from 0.0 to 1.0 (low to high danger)   
@@ -493,21 +498,21 @@ int main(int argc, char **argv)
 				break;
 			default:
 				printf("bruh\n");
-		    
-    	}
+	    }
     	
-    	enqueue(&fall_queue, danger_value);			//then add the danger value to the queue
-    	fall_ann = fann_create_from_file("fall_test.net");
-    	
-    	//get float array from queue
-    	//then run the neural net on the queue if queue is at max size
-    	if (fall_queue->length != fall_queue->MAX_QUEUELENGTH) { //if queue doesn't have 3 items yet, skip
-    		continue;
-    		
-    	} else {
-    	
-    		get_data(fall_queue->front, fall_input);
-    		fall_output = fann_run(fall_ann, fall_input);
+		enqueue(&fall_queue, danger_value);			//then add the danger value to the queue
+		
+		//get float array from queue
+		//then run the neural net on the queue if queue is at max size
+		if (fall_queue->length != fall_queue->MAX_QUEUELENGTH) { //if queue doesn't have 3 items yet, skip
+			continue;
+			
+		} 
+		else {
+				
+			fall_ann = fann_create_from_file("fall_test.net");
+			get_data(fall_queue->front, fall_input);
+			fall_output = fann_run(fall_ann, fall_input);
 			max = fall_output[0];
 			fall_risk = 0;
 			for (k=0; k<4; k++) {
@@ -516,8 +521,13 @@ int main(int argc, char **argv)
 					max = fall_output[k];
 					fall_risk = k;
 				}
-	    	}
-    	}
+	    		}
+			if(prev_risk != fall_rsk) {
+			    printf("Patient fall risk is: %d\n", fall_risk);
+			    printf("-------------------------------------------------------\n");
+			}
+			prev_risk = fall_risk;
+    		}
 	}
 	close(clientThread_0->client->sockfd);
 	close(clientThread_1->client->sockfd);
