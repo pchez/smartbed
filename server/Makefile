@@ -2,20 +2,27 @@ CC=gcc
 CFLAGS=-c -g -Wall
 LDFLAGS=-lmraa -lm -pthread -lfann
 SOURCES=test_neural_net.c 9DOF.c server.c LSM9DS0.c
+SOURCESFALLRISK=test_fallrisk.c 9DOF.c server.c LSM9DS0.c
 #SOURCES=collect_train_data.c 9DOF.c server.c LSM9DS0.c
 SOURCESNEW=train_neural_net.c 
 OBJECTS=$(SOURCES:.c=.o)
 OBJECTSNEW=$(SOURCES:.c=.o)
-EXECUTABLE=test_neural_net
+#EXECUTABLE=test_neural_net
 #EXECUTABLE=collect_train_data
+EXECUTABLEFALLRISK=test_fallrisk
 EXECUTABLENEW = train_neural_net
 
 all: $(SOURCES) $(EXECUTABLE)
 
 train: $(SOURCESNEW) $(EXECUTABLENEW) 
 
+fallrisk: $(SOURCESFALLRISK) $(EXECUTABLEFALLRISK)
+
 $(EXEXCUTABLENEW): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTSNEW) -o $@
+
+$(EXECUTABLEFALLRISK): $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
 #$(EXECUTABLENEW): train_neural_net.c 
 #	gcc -c -g -Wall -lfann train_neural_net.c -o train_neural_net
