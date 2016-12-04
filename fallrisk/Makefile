@@ -1,15 +1,15 @@
 CC=gcc
-CFLAGS=-c -g -Wall 
+CFLAGS=-c -g -Wall
 LDFLAGS=-lmraa -lm -pthread -lfann
-#SOURCES=collect_train_data.c 9DOF.c server.c LSM9DS0.c
-SOURCESFALLRISK=updated_fallrisk.c queue.c 9DOF.c server.c LSM9DS0.c
+SOURCES=test_neural_net.c 9DOF.c server.c LSM9DS0.c
+SOURCESFALLRISK=test_fallrisk.c 9DOF.c server.c LSM9DS0.c
 #SOURCES=collect_train_data.c 9DOF.c server.c LSM9DS0.c
 SOURCESNEW=train_neural_net.c 
-OBJECTS=$(SOURCESFALLRISK:.c=.o)
+OBJECTS=$(SOURCES:.c=.o)
 OBJECTSNEW=$(SOURCES:.c=.o)
 #EXECUTABLE=test_neural_net
 #EXECUTABLE=collect_train_data
-EXECUTABLEFALLRISK=updated_fallrisk
+EXECUTABLEFALLRISK=test_fallrisk
 EXECUTABLENEW = train_neural_net
 
 all: $(SOURCES) $(EXECUTABLE)
@@ -18,7 +18,7 @@ train: $(SOURCESNEW) $(EXECUTABLENEW)
 
 fallrisk: $(SOURCESFALLRISK) $(EXECUTABLEFALLRISK)
 
-$(EXECUTABLENEW): $(OBJECTSNEW)
+$(EXEXCUTABLENEW): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTSNEW) -o $@
 
 $(EXECUTABLEFALLRISK): $(OBJECTS)
@@ -37,7 +37,7 @@ clean:
 	rm -rf $(EXECUTABLE)
 	rm -rf $(EXECUTABLENEW)
 	rm -rf $(OBJECTS)
-	#rm -rf TEST.net
+	rm -rf TEST.net
 	#rm -rf train_data.txt
 	#rm -rf test_data.txt
 

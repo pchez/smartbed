@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include <stdlib.h>
-#define MAX_QUEUELENGTH 3
+#define MAX_QUEUELENGTH 6
 struct Queue
 {
 	//int data;

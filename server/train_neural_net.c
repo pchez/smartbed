@@ -1,8 +1,8 @@
 #include "fann.h"
 
 int main() {
-    const unsigned int num_input = 3;
-    const unsigned int num_output = 3;
+    const unsigned int num_input = 8;
+    const unsigned int num_output = 4;
     const unsigned int num_layers = 3;
     const unsigned int num_neurons_hidden = 4;
     const float desired_error = (const float) 0.0001;

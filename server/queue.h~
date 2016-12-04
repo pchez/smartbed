@@ -1,7 +1,7 @@
 #include <stdio.h>
-
 #include <stdlib.h>
-#define MAX_QUEUELENGTH 3
+
+#define MAX_QUEUELENGTH 6
 struct Queue
 {
 	//int data;
@@ -20,4 +20,3 @@ void enqueue(struct Queue** Q, float data);
 int dequeue(struct Queue** q);
 void print(struct qnode* q);
 void get_data(struct qnode* q,float arr[]);
-float get_val(struct qnode* q);
