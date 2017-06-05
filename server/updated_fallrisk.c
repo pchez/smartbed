@@ -295,6 +295,7 @@ void* handle_client(void *arg) //, float pitchBuffer[], float rollBuffer[])
 	}					
 	//close(client_socket_fd);
 	//pthread_exit((void*)client);
+	free(buffer); //added for CS230
 	return NULL;
 }
 
@@ -337,19 +338,19 @@ int main(int argc, char **argv)
 	//clients *clientThreads = calloc(4,sizeof(CONNECTION*));	
 	
 	clients *clientThread_0 = calloc(1,sizeof(clients));
-	clients *clientThread_1 = calloc(1,sizeof(clients));
-	clients *clientThread_2 = calloc(1,sizeof(clients));
-	clients *clientThread_3 = calloc(1,sizeof(clients));
+	//clients *clientThread_1 = calloc(1,sizeof(clients));
+	//clients *clientThread_2 = calloc(1,sizeof(clients));
+	//clients *clientThread_3 = calloc(1,sizeof(clients));
 
 	clientThread_0->index = 0;
-	clientThread_1->index = 1;
-	clientThread_2->index = 2;
-	clientThread_3->index = 3;
+	//clientThread_1->index = 1;
+	//clientThread_2->index = 2;
+	//clientThread_3->index = 3;
 
 	clientThread_0->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
-	clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThread_1->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThread_2->client = (CONNECTION*) server_accept_connection(server->sockfd);
+	//clientThread_3->client = (CONNECTION*) server_accept_connection(server->sockfd);
 
 	//clientThreads->client[0] = (CONNECTION*) server_accept_connection(server->sockfd);
 	//clientThreads->client[1] = (CONNECTION*) server_accept_connection(server->sockfd);
@@ -378,9 +379,9 @@ int main(int argc, char **argv)
 		int i;
 	while(run_flag) {
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThread_0);
-	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
-	    pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
-	    pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
+	    //pthread_create(&tids[1], NULL, handle_client, (void*)clientThread_1);
+	    //pthread_create(&tids[2], NULL, handle_client, (void*)clientThread_2);
+	    //pthread_create(&tids[3], NULL, handle_client, (void*)clientThread_3);
 	    /*
 	    pthread_create(&tids[0], NULL, handle_client, (void*)clientThreads->client[0]);
 	    pthread_create(&tids[1], NULL, handle_client, (void*)clientThreads->client[1]);
@@ -397,9 +398,9 @@ int main(int argc, char **argv)
 	    
 	    pthread_join(manage_9dof_tid, NULL);*/
 	    pthread_join(tids[0], NULL);
-	    pthread_join(tids[1], NULL);
-	    pthread_join(tids[2], NULL);
-	    pthread_join(tids[3], NULL);
+	    //pthread_join(tids[1], NULL);
+	    //pthread_join(tids[2], NULL);
+	    //pthread_join(tids[3], NULL);
    	
 	 
 	     server_pitch_avg = 0;
@@ -531,12 +532,35 @@ int main(int argc, char **argv)
 		}
 	    }
 	}
+
+	//Below block is commented out, can point out that valgrind notices we don't free queue
+	//Below block is beginning stages of completely freeing queue.
+	/*
+	//added for CS230
+	while(fall_queue->front != NULL) {
+	    qnode *temp;
+	    temp = fall_queue->front;
+	    dequeue(&fall_queue);
+	    free(temp);
+	}
+	*/
+
+
 	close(clientThread_0->client->sockfd);
-	close(clientThread_1->client->sockfd);
-	close(clientThread_2->client->sockfd);
-	close(clientThread_3->client->sockfd);
+	//close(clientThread_1->client->sockfd);
+	//close(clientThread_2->client->sockfd);
+	//close(clientThread_3->client->sockfd);
 
 	printf("\n...cleanup operations complete. Exiting main.\n");
+
+	
+
+	//free(buffer);
+	free(clientThread_0->client);  //added for CS230
+	free(clientThread_0); //added for CS230
+	free(fall_queue); //added for CS230
+	free(server); //added for CS230
+	free(ann); //added for CS230
 
 	return 0;
 } 
